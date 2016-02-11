@@ -11,6 +11,10 @@ env:
     - DB=mysql
     - DB=sqlite
 before_install:
+  # Sqlite set up involves installing a more modern version which we move into a script.
   - sh -c "if [ '$DB' = 'sqlite' ]; then ./ci/install_modern_sqlite.sh; fi;"
 before_script:
-  - rake db:setup
+  # PG and mysql is simpler.
+  - sh -c "if [ '$DB' = 'pgsql' ]; then psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres; fi"
+  - sh -c "if [ '$DB' = 'pgsql' ]; then psql -c 'create database fast_inserter;' -U postgres; fi"
+  - sh -c "if [ '$DB' = 'mysql' ]; then mysql -e 'create database IF NOT EXISTS fast_inserter;'; fi"
