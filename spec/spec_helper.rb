@@ -4,9 +4,11 @@ require 'fast_inserter'
 require 'database_cleaner'
 require 'support/model_macros'
 
-ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
-# ActiveRecord::Base.logger = Logger.new(File.join(File.dirname(__FILE__), "../log/debug.log"))
-# ActiveRecord::Base.send(:include, CanBe::ModelExtensions)
+# Set up active record based on this tests database gem (matrix of multiple)
+configs = YAML.load_file('test/database.yml')
+ActiveRecord::Base.configurations = configs
+db_name = ENV['DB'] || 'sqlite'
+ActiveRecord::Base.establish_connection(db_name)
 
 require 'support/models'
 
