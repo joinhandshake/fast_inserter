@@ -89,7 +89,10 @@ module FastInserter
     def existing_values(group_of_values)
       values_to_check = ActiveRecord::Base.send(:sanitize_sql_array, ["?", group_of_values])
       sql = "SELECT #{@variable_column} FROM #{@table_name} WHERE #{existing_values_static_columns} AND #{@variable_column} IN (#{values_to_check})"
-      ActiveRecord::Base.connection.execute(sql).field_values(@variable_column)
+
+      # NOTE: There are more elegant ways to get this field out of the resultset, but each database adaptor returns a different type
+      # of result from 'execute(sql)'.
+      ActiveRecord::Base.connection.execute(sql).to_a.map { |record_hash| record_hash[@variable_column].to_s }
     end
 
     def existing_values_static_columns

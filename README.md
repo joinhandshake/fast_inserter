@@ -39,9 +39,11 @@ params = {
   additional_columns: {
     created_by_id: current_user.id
   },
-  timestamps: true,
-  unique: true,
-  check_for_existing: true,
+  options: {
+    timestamps: true,
+    unique: true,
+    check_for_existing: true,
+  },
   variable_column: 'user_id',
   values: user_ids
 }
@@ -69,19 +71,19 @@ Includes created_at and updated_at timestamps to each record.
 
 ### unique
 
-Ensures that all items in the 'values' parameter are unique.
+Ensures that the 'values' parameter is a unique set of values.
 
 ### check_for_existing
 
-Queries the database for any values which already exist. This uses 'static_columns' and 'variable_column' for determining uniqueness.
+Queries the table for any values which already exist and removes them from the values to be inserted. This query uses 'static_columns' and 'variable_column' for determining uniqueness.
 
 ### variable_column
 
-The name of the column which we will be dynamically inserting records for
+The name of the column which we will be dynamically inserting records for. This is the only column which changes per-record being inserted.
 
 ### values
 
-The large list of values to insert for the 'variable_column' value.
+The large list of values to use for the 'variable_column' value when inserting the records.
 
 
 ## Development
