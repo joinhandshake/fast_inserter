@@ -3,12 +3,12 @@ require 'active_record'
 require 'fast_inserter'
 require 'database_cleaner'
 require 'support/model_macros'
+require 'yaml'
 
 # Set up active record based on this tests database gem (matrix of multiple)
-configs = YAML.load_file('test/database.yml')
-ActiveRecord::Base.configurations = configs
+configs = YAML.load_file('spec/support/database.yml')
 db_name = ENV['DB'] || 'sqlite'
-ActiveRecord::Base.establish_connection(db_name)
+ActiveRecord::Base.establish_connection(configs[db_name])
 
 require 'support/models'
 
