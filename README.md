@@ -2,6 +2,10 @@
 
 Use raw SQL to insert database records in bulk. Supports uniqueness constraints, timestamps, and checking for existing records.
 
+The motivation for this library from the fact that rails does validations on each and every inserted record in the join table. And, even if you pass validate: false, it still loads each record and inserts one by one. This leads to very slow insertion of large number (thoasands) of records.
+
+This library skips active record altogether and uses raw sql to insert records. However, using raw sql goes around all your business logic, so we provide ways to still have niceties like uniqueness constraints and timestamps.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -20,7 +24,65 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+In most cases, you probably don't want to use this library and instead should active record. However, should you need to use this library, usage instructions are below.
+
+A basic usage for inserting multiple 'MassEmailsUser' records:
+
+```ruby
+@mass_email = MassEmail.find(params[:id])
+user_ids = [1, 2, 3, 4] # ids to fast insert
+params = {
+  table: 'mass_emails_users',
+  static_columns: {
+    mass_email_id: @mass_email.id
+  },
+  additional_columns: {
+    created_by_id: current_user.id
+  },
+  timestamps: true,
+  unique: true,
+  check_for_existing: true,
+  variable_column: 'user_id',
+  values: user_ids
+}
+inserter = FastInserter::Base.new(params)
+inserter.fast_insert
+```
+
+Let's walkthrough the options.
+
+### table
+
+Defines the table name to insert into
+
+### static_columns
+
+These are columns and the values for the columns which will not change for each insertion.
+
+### additional_columns
+
+These are also static columns which will not changed, but these columns will not be used for uniqueness validation constraints.
+
+### timestamps
+
+Includes created_at and updated_at timestamps to each record.
+
+### unique
+
+Ensures that all items in the 'values' parameter are unique.
+
+### check_for_existing
+
+Queries the database for any values which already exist. This uses 'static_columns' and 'variable_column' for determining uniqueness.
+
+### variable_column
+
+The name of the column which we will be dynamically inserting records for
+
+### values
+
+The large list of values to insert for the 'variable_column' value.
+
 
 ## Development
 
