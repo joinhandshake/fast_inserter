@@ -1,5 +1,7 @@
 # FastInserter
 
+[![Build Status](https://travis-ci.org/strydercorp/fast_inserter.svg?branch=master)](https://travis-ci.org/strydercorp/fast_inserter)
+
 Use raw SQL to insert database records in bulk. Supports uniqueness constraints, timestamps, and checking for existing records.
 
 The motivation for this library from the fact that rails does validations on each and every inserted record in the join table. And, even if you pass validate: false, it still loads each record and inserts one by one. This leads to very slow insertion of large number (thoasands) of records.
