@@ -11,6 +11,6 @@ env:
     - DB=mysql
     - DB=sqlite
 before_install:
-  - sh -c "if [ '$DB' = 'sqlite' ]; ./ci/install_modern_sqlite.sh; fi;"
+  - sh -c "if [ '$DB' = 'sqlite' ]; then ./ci/install_modern_sqlite.sh; fi;"
 before_script:
   - rake db:setup
