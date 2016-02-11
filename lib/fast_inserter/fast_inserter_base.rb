@@ -92,6 +92,8 @@ module FastInserter
 
       # NOTE: There are more elegant ways to get this field out of the resultset, but each database adaptor returns a different type
       # of result from 'execute(sql)'.
+      puts ActiveRecord::Base.connection.execute(sql).class
+      puts ActiveRecord::Base.connection.execute(sql).to_a
       ActiveRecord::Base.connection.execute(sql).to_a.map { |record_hash| record_hash[@variable_column].to_s }
     end
 
