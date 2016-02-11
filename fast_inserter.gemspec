@@ -6,12 +6,12 @@ require 'fast_inserter/version'
 Gem::Specification.new do |spec|
   spec.name          = "fast_inserter"
   spec.version       = FastInserter::VERSION
-  spec.authors       = ["Scott Ringwelski"]
-  spec.email         = ["sgringwe@mtu.edu"]
+  spec.authors       = ["Scott Ringwelski", "Brandon Gafford", "Jordon Dornbos"]
+  spec.email         = ["scott@joinhandshake.com", "brandon@joinhandshake.com", "jordon@joinhandshake.com"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{Quickly insert database records in bulk}
+  spec.description   = %q{Use raw SQL to insert database records in bulk. Supports uniqueness constraints, timestamps, and checking for existing records.}
+  spec.homepage      = "https://github.com/strydercorp/fast_inserter."
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
