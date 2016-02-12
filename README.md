@@ -31,6 +31,8 @@ Or install it yourself as:
 
 ## Usage
 
+*We write a longer post about this gem at https://joinhandshake.com/engineering/2016/01/26/quickly-inserting-thousands-of-records-in-rails.html*
+
 In most cases, you probably don't want to use this library and instead should active record. However, should you need to use this library, usage instructions are below.
 
 A basic usage for inserting multiple 'MassEmailsUser' records:
