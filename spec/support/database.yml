@@ -7,7 +7,7 @@ mysql:
   database: fast_inserter
   username:
   encoding: utf8
-postgres:
+pg:
   adapter: postgresql
   database: fast_inserter
   username: postgres
