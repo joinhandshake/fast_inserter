@@ -15,9 +15,12 @@
 #     additional_columns: {
 #       created_by_id: current_user.id
 #     },
-#     timestamps: true,
-#     unique: true,
-#     check_for_existing: true,
+#     options: {
+#       timestamps: true,
+#       unique: true,
+#       check_for_existing: true,
+#       group_size: 1_000
+#     },
 #     variable_column: 'user_id',
 #     values: user_ids
 #   }

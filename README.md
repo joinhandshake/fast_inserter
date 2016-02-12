@@ -45,6 +45,7 @@ params = {
     timestamps: true,
     unique: true,
     check_for_existing: true,
+    group_size: 10_000
   },
   variable_column: 'user_id',
   values: user_ids
@@ -69,15 +70,19 @@ These are also static columns which will not changed, but these columns will not
 
 ### timestamps
 
-Includes created_at and updated_at timestamps to each record.
+Includes created_at and updated_at timestamps to each record. Default is false.
 
 ### unique
 
-Ensures that the 'values' parameter is a unique set of values.
+Ensures that the 'values' parameter is a unique set of values. Default is false.
 
 ### check_for_existing
 
-Queries the table for any values which already exist and removes them from the values to be inserted. This query uses 'static_columns' and 'variable_column' for determining uniqueness.
+Queries the table for any values which already exist and removes them from the values to be inserted. This query uses 'static_columns' and 'variable_column' for determining uniqueness. Default is false.
+
+### group_size
+
+Insertions will be broken up into batches. This specifies the number of records you want to insert per batch. Default is 10,000.
 
 ### variable_column
 
@@ -87,7 +92,6 @@ The name of the column which we will be dynamically inserting records for. This 
 
 The large list of values to use for the 'variable_column' value when inserting the records.
 
-
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
@@ -96,7 +100,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/strydercorp/fast_inserter.
+Bug reports and pull requests are welcome on GitHub at https://github.com/strydercorp/fast_inserter. All code must run on sqlite, pg, and mysql (tests are set up CI already).
 
 
 ## License
