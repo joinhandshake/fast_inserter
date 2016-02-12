@@ -91,10 +91,16 @@ module FastInserter
       sql = "SELECT #{@variable_column} FROM #{@table_name} WHERE #{existing_values_static_columns} AND #{@variable_column} IN (#{values_to_check})"
 
       # NOTE: There are more elegant ways to get this field out of the resultset, but each database adaptor returns a different type
-      # of result from 'execute(sql)'.
-      puts ActiveRecord::Base.connection.execute(sql).class
-      puts ActiveRecord::Base.connection.execute(sql).to_a
-      ActiveRecord::Base.connection.execute(sql).to_a.map { |record_hash| record_hash[@variable_column].to_s }
+      # of result from 'execute(sql)'. Potential classes for 'result' is Array (sqlite), Mysql2::Result (mysql2), PG::Result (pg). Each
+      # result can be enumerated into a list of arrays (mysql) or list of hashes (sqlite, pg)
+      results = ActiveRecord::Base.connection.execute(sql)
+      results.to_a.map do |result|
+        if result.is_a?(Hash)
+          result[@variable_column].to_s
+        elsif result.is_a?(Array)
+          result[0].to_s
+        end
+      end
     end
 
     def existing_values_static_columns
