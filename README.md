@@ -3,9 +3,9 @@
 [![Gem Version](https://badge.fury.io/rb/fast_inserter.svg)](https://badge.fury.io/rb/fast_inserter)
 [![Build Status](https://travis-ci.org/strydercorp/fast_inserter.svg?branch=master)](https://travis-ci.org/strydercorp/fast_inserter)
 
-Use raw SQL to insert database records in bulk. Supports uniqueness constraints, timestamps, and checking for existing records.
+Use raw SQL to insert database records in bulk, fast. Supports uniqueness constraints, timestamps, and checking for existing records.
 
-The motivation for this library from the fact that rails does validations on each and every inserted record in the join table. And, even if you pass validate: false, it still loads each record and inserts one by one. This leads to very slow insertion of large number (thoasands) of records.
+The motivation for this library comes from the fact that rails does validations on each and every inserted record in the join table. And, even if you pass validate: false, it still loads each record and inserts one by one. This is all good, but also means inserting a large number (thousands) of records is slow.
 
 This library skips active record altogether and uses raw sql to insert records. However, using raw sql goes around all your business logic, so we provide ways to still have niceties like uniqueness constraints and timestamps.
 
