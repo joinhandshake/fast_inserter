@@ -1,4 +1,5 @@
 language: ruby
+sudo: required
 notifications:
   email: false
 rvm:
