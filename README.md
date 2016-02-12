@@ -1,5 +1,6 @@
 # FastInserter
 
+[![Gem Version](https://badge.fury.io/rb/fast_inserter.svg)](https://badge.fury.io/rb/fast_inserter)
 [![Build Status](https://travis-ci.org/strydercorp/fast_inserter.svg?branch=master)](https://travis-ci.org/strydercorp/fast_inserter)
 
 Use raw SQL to insert database records in bulk. Supports uniqueness constraints, timestamps, and checking for existing records.
