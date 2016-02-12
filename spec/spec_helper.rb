@@ -10,8 +10,6 @@ configs = YAML.load_file('spec/support/database.yml')
 db_name = ENV['DB'] || 'sqlite'
 ActiveRecord::Base.establish_connection(configs[db_name])
 
-puts configs[db_name]
-
 require 'support/models'
 
 RSpec.configure do |config|

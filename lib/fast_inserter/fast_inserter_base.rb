@@ -38,6 +38,8 @@
 #   additional_columns: Hash
 #     A hash representing additional column values to set that you don't want
 #     to include in uniqueness checks or other pre-insertion operations.
+#   group_size: Integer
+#     The number of items you want to insert per batch of records. Default 10_000.
 #
 module FastInserter
   class Base

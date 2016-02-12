@@ -24,6 +24,10 @@ Or install it yourself as:
 
     $ gem install fast_inserter
 
+## Runtime dependencies
+
+* activerecord: Fast inserter depends on active record for handling database connections, database configuration, executing the sql, and sql sanitization.
+
 ## Usage
 
 In most cases, you probably don't want to use this library and instead should active record. However, should you need to use this library, usage instructions are below.
