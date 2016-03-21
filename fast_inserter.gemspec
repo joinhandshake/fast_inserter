@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = %q{Quickly insert database records in bulk}
   spec.description   = %q{Use raw SQL to insert database records in bulk. Supports uniqueness constraints, timestamps, and checking for existing records.}
-  spec.homepage      = "https://github.com/strydercorp/fast_inserter."
+  spec.homepage      = "https://github.com/strydercorp/fast_inserter"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
