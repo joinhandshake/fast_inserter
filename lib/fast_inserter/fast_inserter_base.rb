@@ -110,8 +110,12 @@ module FastInserter
 
     def existing_values_static_columns
       @static_columns.map do |key, value|
-        sanitized_value = ActiveRecord::Base.send(:sanitize_sql_array, ["?", value])
-        "#{key} = #{sanitized_value}"
+        if value.nil?
+          "#{key} IS NULL"
+        else
+          sanitized_value = ActiveRecord::Base.send(:sanitize_sql_array, ["?", value])
+          "#{key} = #{sanitized_value}"
+        end
       end.join(' AND ')
     end
 
