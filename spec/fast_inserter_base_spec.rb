@@ -175,6 +175,44 @@ describe FastInserter do
       expect(event.attendees.pluck(:user_id)).to match_array (user_ids + next_user_ids)
     end
 
+    it "doesn't insert existing values what a static column is null" do
+      event = create_event
+      user_ids = [1, 2, 3, 4]
+
+      join_params = {
+        table: 'attendees',
+        static_columns: {
+          attendable_id: event.id,
+          attendable_type: 'Event',
+          created_by_id: nil
+        },
+        variable_column: 'user_id',
+        values: user_ids,
+        options: {
+          timestamps: true,
+          check_for_existing: true
+        }
+      }
+      inserter = FastInserter::Base.new(join_params)
+      expect(event.attendees.count).to eq 0
+      inserter.fast_insert
+
+      expect(event.attendees.count).to eq 4
+      created_at = event.attendees.first.created_at
+      updated_at = event.attendees.first.updated_at
+
+      # Now do a second round of inserting, including the old values, and expect no duplicates
+      next_user_ids = [5, 6, 7, 8]
+      join_params[:values] = (user_ids + next_user_ids)
+      inserter = FastInserter::Base.new(join_params)
+      inserter.fast_insert
+
+      expect(event.attendees.count).to eq 8
+      expect(event.attendees.first.created_at).to eq created_at
+      expect(event.attendees.first.updated_at).to eq updated_at
+      expect(event.attendees.pluck(:user_id)).to match_array (user_ids + next_user_ids)
+    end
+
     it "doesn't include the additional data when finding existing" do
       user_id = 9
       event = create_event
