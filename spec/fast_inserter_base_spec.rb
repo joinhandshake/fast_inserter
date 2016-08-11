@@ -180,18 +180,18 @@ describe FastInserter do
       user_ids = [1, 2, 3, 4]
 
       join_params = {
-          table: 'attendees',
-          static_columns: {
-              attendable_id: event.id,
-              attendable_type: 'Event',
-              created_by_id: nil
-          },
-          variable_column: 'user_id',
-          values: user_ids,
-          options: {
-              timestamps: true,
-              check_for_existing: true
-          }
+        table: 'attendees',
+        static_columns: {
+          attendable_id: event.id,
+          attendable_type: 'Event',
+          created_by_id: nil
+        },
+        variable_column: 'user_id',
+        values: user_ids,
+        options: {
+          timestamps: true,
+          check_for_existing: true
+        }
       }
       inserter = FastInserter::Base.new(join_params)
       expect(event.attendees.count).to eq 0
