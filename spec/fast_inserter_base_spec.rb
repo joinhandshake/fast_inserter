@@ -1,6 +1,12 @@
 require 'spec_helper'
 
 describe FastInserter do
+  describe "defaults" do
+    it "has a default group size of 2,000 which is low enough to avoid locks and high enough to be performant" do
+      expect(FastInserter::Base::DEFAULT_GROUP_SIZE).to eq 2_000
+    end
+  end
+
   describe "fast inserting" do
     it "correctly inserts data when values are strings" do
       mass_email = create_mass_email
