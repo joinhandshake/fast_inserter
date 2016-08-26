@@ -43,6 +43,8 @@
 #
 module FastInserter
   class Base
+    DEFAULT_GROUP_SIZE = 2_000
+
     def initialize(params)
       @table_name = params[:table]
       @static_columns = params[:static_columns]
@@ -55,7 +57,7 @@ module FastInserter
       # out the load. The second 'false' param means don't fill in the last group with nil elements.
       all_values = params[:values]
       all_values.uniq! if @options[:unique]
-      group_size = Integer(params[:group_size] || 10_000)
+      group_size = Integer(params[:group_size] || DEFAULT_GROUP_SIZE)
       @value_groups = all_values.in_groups_of(group_size, false)
     end
 
