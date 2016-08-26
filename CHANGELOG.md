@@ -1,4 +1,4 @@
-## 0.1.3 (August 11, 2016) ##
+## 0.1.3 (August 26, 2016) ##
 
 *   Lower the batch size
 
