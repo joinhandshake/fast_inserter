@@ -1,3 +1,10 @@
+## 0.1.3 (August 11, 2016) ##
+
+*   Lower the batch size
+
+    *Scott Ringwelski*
+
+
 ## 0.1.2 (August 11, 2016) ##
 
 *   Added support for NULL static columns.
