@@ -94,20 +94,24 @@ module FastInserter
 
     # Queries for the existing values for a given group of values
     def existing_values(group_of_values)
-      values_to_check = ActiveRecord::Base.send(:sanitize_sql_array, ["?", group_of_values])
-      sql = "SELECT #{@variable_column} FROM #{@table_name} WHERE #{existing_values_static_columns} AND #{@variable_column} IN (#{values_to_check})"
+      sql = "SELECT #{@variable_column} FROM #{@table_name} WHERE #{existing_values_static_columns}"
 
       # NOTE: There are more elegant ways to get this field out of the resultset, but each database adaptor returns a different type
       # of result from 'execute(sql)'. Potential classes for 'result' is Array (sqlite), Mysql2::Result (mysql2), PG::Result (pg). Each
       # result can be enumerated into a list of arrays (mysql) or list of hashes (sqlite, pg)
       results = ActiveRecord::Base.connection.execute(sql)
-      results.to_a.map do |result|
+      existing_values = results.to_a.map do |result|
         if result.is_a?(Hash)
           result[@variable_column].to_s
         elsif result.is_a?(Array)
           result[0].to_s
         end
       end
+
+      # Rather than a giant IN query in the sql statement (which can be bad for database performance),
+      # do the filtering of relevant values here in a ruby select.
+      group_of_values_strings = group_of_values.map(&:to_s)
+      existing_values & group_of_values_strings
     end
 
     def existing_values_static_columns
