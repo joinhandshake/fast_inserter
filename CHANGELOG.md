@@ -1,3 +1,9 @@
+## 0.1.4 (September 19, 2016) ##
+
+*   Improve performance when checking for existing records.
+
+    *Scott Ringwelski*
+
 ## 0.1.3 (August 26, 2016) ##
 
 *   Lower the batch size
