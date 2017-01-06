@@ -49,13 +49,13 @@ module FastInserter
       @table_name = params[:table]
       @static_columns = params[:static_columns]
       @additional_columns = params[:additional_columns]
-      @variable_column = params[:variable_column]
+      @variable_columns = Array(params[:variable_columns] || params[:variable_column])
       @options = params[:options] || {}
 
       # We want to break up the insertions into multiple transactiosn in case there
       # is a very large amount of values. This avoids PG:OutOfMemory errors and smooths
       # out the load. The second 'false' param means don't fill in the last group with nil elements.
-      all_values = params[:values]
+      all_values = params[:values].map { |value| Array(value) }
       all_values.uniq! if @options[:unique]
       group_size = Integer(params[:group_size] || ENV['FAST_INSERTER_GROUP_SIZE'] || DEFAULT_GROUP_SIZE)
       @value_groups = all_values.in_groups_of(group_size, false)
@@ -82,7 +82,7 @@ module FastInserter
     def fast_insert_group(group)
       if @options[:check_for_existing]
         ActiveRecord::Base.transaction do
-          non_existing_values = group.map(&:to_s) - existing_values(group)
+          non_existing_values = group.map { |values| values.map(&:to_s) } - existing_values(group)
           sql_string = insertion_sql_for_group(non_existing_values)
           ActiveRecord::Base.connection.execute(sql_string) unless non_existing_values.empty?
         end
@@ -94,7 +94,7 @@ module FastInserter
 
     # Queries for the existing values for a given group of values
     def existing_values(group_of_values)
-      sql = "SELECT #{@variable_column} FROM #{@table_name} WHERE #{existing_values_static_columns}"
+      sql = "SELECT #{@variable_columns.join(', ')} FROM #{@table_name} WHERE #{existing_values_static_columns}"
 
       # NOTE: There are more elegant ways to get this field out of the resultset, but each database adaptor returns a different type
       # of result from 'execute(sql)'. Potential classes for 'result' is Array (sqlite), Mysql2::Result (mysql2), PG::Result (pg). Each
@@ -102,15 +102,15 @@ module FastInserter
       results = ActiveRecord::Base.connection.execute(sql)
       existing_values = results.to_a.map do |result|
         if result.is_a?(Hash)
-          result[@variable_column].to_s
+          @variable_columns.map { |col| result[col] }.map(&:to_s)
         elsif result.is_a?(Array)
-          result[0].to_s
+          result.map(&:to_s)
         end
       end
 
       # Rather than a giant IN query in the sql statement (which can be bad for database performance),
       # do the filtering of relevant values here in a ruby select.
-      group_of_values_strings = group_of_values.map(&:to_s)
+      group_of_values_strings = group_of_values.map { |values| values.map(&:to_s) }
       existing_values & group_of_values_strings
     end
 
@@ -130,7 +130,7 @@ module FastInserter
     end
 
     def column_names
-      "#{all_static_columns.keys.join(', ')}, #{@variable_column}"
+      "#{all_static_columns.keys.join(', ')}, #{@variable_columns.join(', ')}"
     end
 
     def all_static_columns
@@ -157,9 +157,9 @@ module FastInserter
       rv = []
       static_column_values = ActiveRecord::Base.send(:sanitize_sql_array, ["?", all_static_columns.values])
 
-      group_of_values.each do |value|
-        value = ActiveRecord::Base.send(:sanitize_sql_array, ["?", value])
-        rv << "(#{static_column_values},#{value})"
+      group_of_values.each do |values|
+        values = values.map { |value| ActiveRecord::Base.send(:sanitize_sql_array, ["?", value]) }
+        rv << "(#{static_column_values},#{values.join(',')})"
       end
 
       rv.join(', ')
