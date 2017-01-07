@@ -28,6 +28,42 @@ describe FastInserter do
       expect(mass_email.mass_email_emails.pluck(:email_address)).to eq fake_email_addresses
     end
 
+    it "supports multiple variable columns" do
+      event = create_event
+      user_ids = [1, 2, 3, 4]
+      registered = [true, true, false, false]
+      checked_in = [true, false, true, false]
+
+      join_params = {
+        table: 'attendees',
+        static_columns: {
+          attendable_id: event.id,
+          attendable_type: 'Event'
+        },
+        variable_columns: %w(user_id registered checked_in),
+        values: user_ids.zip(registered, checked_in),
+        options: {
+          timestamps: true
+        }
+      }
+      inserter = FastInserter::Base.new(join_params)
+      expect(event.attendees.count).to eq 0
+      inserter.fast_insert
+
+      expect(event.attendees.count).to eq 4
+      expect(event.attendees.find_by(user_id: 1).registered).to eq true
+      expect(event.attendees.find_by(user_id: 1).checked_in).to eq true
+
+      expect(event.attendees.find_by(user_id: 2).registered).to eq true
+      expect(event.attendees.find_by(user_id: 2).checked_in).to eq false
+
+      expect(event.attendees.find_by(user_id: 3).registered).to eq false
+      expect(event.attendees.find_by(user_id: 3).checked_in).to eq true
+
+      expect(event.attendees.find_by(user_id: 4).registered).to eq false
+      expect(event.attendees.find_by(user_id: 4).checked_in).to eq false
+    end
+
     it "only inserts unique values when unique option is set" do
       mass_email = create_mass_email
       fake_email_addresses = ["student@amaranta.edu", "recruiter@fb.com", "recruiter@fb.com"]
@@ -85,7 +121,7 @@ describe FastInserter do
 
       # Make sure that each is created, one per user, and each has timestamps set properly
       expect(event.attendees.count).to eq 4
-      expect(event.attendees.pluck(:user_id)).to match_array user_ids
+      expect(event.attendees.pluck(:user_id)).to match_array user_ids.uniq
       expect(event.attendees.pluck(:created_at).compact.count).to eq 4
       expect(event.attendees.pluck(:updated_at).compact.count).to eq 4
     end
