@@ -1,3 +1,9 @@
+## 0.1.5 (January 9, 2017) ##
+
+*   Support multiple variable columns
+
+    *Josh Warfield*
+
 ## 0.1.4 (September 19, 2016) ##
 
 *   Improve performance when checking for existing records.

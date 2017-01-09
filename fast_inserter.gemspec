@@ -6,8 +6,8 @@ require 'fast_inserter/version'
 Gem::Specification.new do |spec|
   spec.name          = "fast_inserter"
   spec.version       = FastInserter::VERSION
-  spec.authors       = ["Scott Ringwelski", "Brandon Gafford", "Jordon Dornbos", "Matt Hickman"]
-  spec.email         = ["scott@joinhandshake.com", "brandon@joinhandshake.com", "jordon@joinhandshake.com", "matt@joinhandshake.com"]
+  spec.authors       = ["Scott Ringwelski", "Brandon Gafford", "Jordon Dornbos", "Matt Hickman", "Josh Warfield"]
+  spec.email         = ["scott@joinhandshake.com", "brandon@joinhandshake.com", "jordon@joinhandshake.com", "matt@joinhandshake.com", "josh@joinhandshake.com"]
 
   spec.summary       = %q{Quickly insert database records in bulk}
   spec.description   = %q{Use raw SQL to insert database records in bulk. Supports uniqueness constraints, timestamps, and checking for existing records.}
