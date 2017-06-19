@@ -43,7 +43,7 @@
 #
 module FastInserter
   class Base
-    DEFAULT_GROUP_SIZE = 10_000
+    DEFAULT_GROUP_SIZE = 2_000
 
     def initialize(params)
       @table_name = params[:table]
