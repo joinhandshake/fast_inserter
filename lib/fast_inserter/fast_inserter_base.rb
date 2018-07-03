@@ -104,7 +104,7 @@ module FastInserter
 
       # Rather than a giant IN query in the sql statement (which can be bad for database performance),
       # do the filtering of relevant values here in a ruby select.
-      group_of_values_strings = stringify_values(group_of_values)#.map { |values| values.map(&:to_s) }
+      group_of_values_strings = stringify_values(group_of_values)
       existing_values & group_of_values_strings
     end
 
