@@ -12,9 +12,6 @@ env:
     - DB=pg
     - DB=mysql
     - DB=sqlite
-# before_install:
-#   # Sqlite set up involves installing a more modern version which we move into a script.
-#   - sh -c "if [ '$DB' = 'sqlite' ]; then ./ci/install_modern_sqlite.sh; fi;"
 before_script:
   # PG and mysql is simpler.
   - sh -c "if [ '$DB' = 'pg' ]; then psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres; fi"
