@@ -379,5 +379,74 @@ describe FastInserter do
       expect(event2.attendees.count).to eq 4
       expect(event2.attendees.pluck(:user_id)).to match_array user_ids
     end
+
+    it "checks for existing values with multiple variable columns" do
+      event = create_event
+
+      # First insert - two attendees
+      user_ids = [1, 2]
+      registered = [true, true]
+      checked_in = [true, false]
+
+      join_params = {
+        table: 'attendees',
+        static_columns: {
+          attendable_id: event.id,
+          attendable_type: 'Event'
+        },
+        variable_columns: %w(user_id registered checked_in),
+        values: user_ids.zip(registered, checked_in),
+        options: {
+          timestamps: true
+        }
+      }
+      inserter = FastInserter::Base.new(join_params)
+      expect(event.attendees.count).to eq 0
+      inserter.fast_insert
+
+      expect(event.attendees.count).to eq 2
+      expect(event.attendees.find_by(user_id: 1).registered).to eq true
+      expect(event.attendees.find_by(user_id: 1).checked_in).to eq true
+
+      expect(event.attendees.find_by(user_id: 2).registered).to eq true
+      expect(event.attendees.find_by(user_id: 2).checked_in).to eq false
+
+      # Second insert - the same two attendees plus two more
+      user_ids = [1, 2, 3, 4]
+      registered = [true, true, false, false]
+      checked_in = [true, false, true, false]
+
+      join_params = {
+        table: 'attendees',
+        static_columns: {
+          attendable_id: event.id,
+          attendable_type: 'Event'
+        },
+        variable_columns: %w(user_id registered checked_in),
+        values: user_ids.zip(registered, checked_in),
+        options: {
+          timestamps: true,
+          check_for_existing: true
+        }
+      }
+      inserter = FastInserter::Base.new(join_params)
+      expect(event.attendees.count).to eq 2
+      inserter.fast_insert
+
+      # There should only be 4 attendees total, no duplicates
+      expect(event.attendees.count).to eq 4
+
+      expect(event.attendees.find_by(user_id: 1).registered).to eq true
+      expect(event.attendees.find_by(user_id: 1).checked_in).to eq true
+
+      expect(event.attendees.find_by(user_id: 2).registered).to eq true
+      expect(event.attendees.find_by(user_id: 2).checked_in).to eq false
+
+      expect(event.attendees.find_by(user_id: 3).registered).to eq false
+      expect(event.attendees.find_by(user_id: 3).checked_in).to eq true
+
+      expect(event.attendees.find_by(user_id: 4).registered).to eq false
+      expect(event.attendees.find_by(user_id: 4).checked_in).to eq false
+    end
   end
 end

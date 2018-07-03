@@ -82,7 +82,7 @@ module FastInserter
     def fast_insert_group(group)
       if @options[:check_for_existing]
         ActiveRecord::Base.transaction do
-          non_existing_values = group.map { |values| values.map(&:to_s) } - existing_values(group)
+          non_existing_values = stringify_values(group) - existing_values(group)
           sql_string = insertion_sql_for_group(non_existing_values)
           ActiveRecord::Base.connection.execute(sql_string) unless non_existing_values.empty?
         end
@@ -100,18 +100,22 @@ module FastInserter
       # of result from 'execute(sql)'. Potential classes for 'result' is Array (sqlite), Mysql2::Result (mysql2), PG::Result (pg). Each
       # result can be enumerated into a list of arrays (mysql) or list of hashes (sqlite, pg)
       results = ActiveRecord::Base.connection.execute(sql)
-      existing_values = results.to_a.map do |result|
-        if result.is_a?(Hash)
-          @variable_columns.map { |col| result[col] }.map(&:to_s)
-        elsif result.is_a?(Array)
-          result.map(&:to_s)
-        end
-      end
+      existing_values = stringify_values(results)
 
       # Rather than a giant IN query in the sql statement (which can be bad for database performance),
       # do the filtering of relevant values here in a ruby select.
-      group_of_values_strings = group_of_values.map { |values| values.map(&:to_s) }
+      group_of_values_strings = stringify_values(group_of_values)#.map { |values| values.map(&:to_s) }
       existing_values & group_of_values_strings
+    end
+
+    def stringify_values(results)
+      results.to_a.map do |result|
+        if result.is_a?(Hash)
+          @variable_columns.map { |col| ActiveRecord::Base.connection.type_cast(result[col], column_definitions[col]) }
+        elsif result.is_a?(Array)
+          result.map.with_index { |val, i| ActiveRecord::Base.connection.type_cast(val, column_definitions[@variable_columns[i]]) }
+        end
+      end
     end
 
     def existing_values_static_columns
@@ -163,6 +167,14 @@ module FastInserter
       end
 
       rv.join(', ')
+    end
+
+    def column_definitions
+      @column_definitions ||= begin
+        ActiveRecord::Base.connection.columns(@table_name).reduce({}) do |memo, column|
+          memo.merge!(column.name => column)
+        end
+      end
     end
   end
 end
