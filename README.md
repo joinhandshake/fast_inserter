@@ -1,7 +1,7 @@
 # FastInserter
 
 [![Gem Version](https://badge.fury.io/rb/fast_inserter.svg)](https://badge.fury.io/rb/fast_inserter)
-[![Build Status](https://travis-ci.org/strydercorp/fast_inserter.svg?branch=master)](https://travis-ci.org/strydercorp/fast_inserter)
+[![Build Status](https://travis-ci.org/joinhandshake/fast_inserter.svg?branch=master)](https://travis-ci.org/joinhandshake/fast_inserter)
 
 Use raw SQL to insert database records in bulk, fast. Supports uniqueness constraints, timestamps, and checking for existing records.
 
@@ -116,7 +116,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/strydercorp/fast_inserter. All code must run on sqlite, pg, and mysql (tests are set up CI already).
+Bug reports and pull requests are welcome on GitHub at https://github.com/joinhandshake/fast_inserter. All code must run on sqlite, pg, and mysql (tests are set up CI already).
 
 
 ## License

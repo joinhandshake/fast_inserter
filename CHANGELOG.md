@@ -1,3 +1,9 @@
+## Unreleased ##
+
+*   Remove support for Ruby 2.2. Add support for Ruby 2.4 and 2.5.
+
+    *Scott Ringwelski*
+
 ## 0.1.5 (January 9, 2017) ##
 
 *   Support multiple variable columns
