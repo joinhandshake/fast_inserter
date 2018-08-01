@@ -40,6 +40,8 @@
 #     to include in uniqueness checks or other pre-insertion operations.
 #   group_size: Integer
 #     The number of items you want to insert per batch of records. Default 10_000.
+#   strip: boolean
+#     Strip values before insertion
 #
 module FastInserter
   class Base
@@ -51,11 +53,10 @@ module FastInserter
       @additional_columns = params[:additional_columns]
       @variable_columns = Array(params[:variable_columns] || params[:variable_column])
       @options = params[:options] || {}
-
       # We want to break up the insertions into multiple transactiosn in case there
       # is a very large amount of values. This avoids PG:OutOfMemory errors and smooths
       # out the load. The second 'false' param means don't fill in the last group with nil elements.
-      all_values = params[:values].map { |value| Array(value) }
+      all_values = params[:values].map { |value| @options[:strip] ? Array(value.strip) : Array(value) }
       all_values.uniq! if @options[:unique]
       group_size = Integer(params[:group_size] || ENV['FAST_INSERTER_GROUP_SIZE'] || DEFAULT_GROUP_SIZE)
       @value_groups = all_values.in_groups_of(group_size, false)

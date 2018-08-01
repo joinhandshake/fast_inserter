@@ -28,6 +28,29 @@ describe FastInserter do
       expect(mass_email.mass_email_emails.pluck(:email_address)).to eq fake_email_addresses
     end
 
+    it "correctly insertes data when values are strings and strip flag is set" do
+      mass_email = create_mass_email
+      fake_email_addresses = ["  student@amaranta.edu", "  recruiter@fb.com  ", "foobar@example.com  " ]
+
+      join_params = {
+        table: 'mass_email_emails',
+        static_columns: {
+          mass_email_id: mass_email.id
+        },
+        variable_column: 'email_address',
+        values: fake_email_addresses,
+        options: {
+          strip: true
+        }
+      }
+      inserter = FastInserter::Base.new(join_params)
+      expect(mass_email.mass_email_emails.count).to eq 0
+      inserter.fast_insert
+
+      expect(mass_email.mass_email_emails.count).to eq 3
+      expect(mass_email.mass_email_emails.pluck(:email_address)).to eq ["student@amaranta.edu", "recruiter@fb.com", "foobar@example.com"]
+    end
+
     it "supports multiple variable columns" do
       event = create_event
       user_ids = [1, 2, 3, 4]
