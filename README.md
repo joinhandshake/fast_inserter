@@ -51,9 +51,9 @@ params = {
   options: {
     timestamps: true,
     unique: true,
-    check_for_existing: true,
-    group_size: 2_000
+    check_for_existing: true
   },
+  group_size: 2_000,
   variable_column: 'user_id',
   values: user_ids
 }
