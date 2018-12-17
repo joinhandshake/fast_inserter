@@ -19,6 +19,7 @@
 #       timestamps: true,
 #       unique: true,
 #       check_for_existing: true,
+#       filter_existing_in_ruby: true,
 #       group_size: 1_000
 #     },
 #     variable_column: 'user_id',
@@ -33,6 +34,9 @@
 #   check_for_existing: true
 #     Checks if values already exist in the database and only inserts nonexisting values
 #     This checks values scoped to static columns.
+#   filter_existing_in_ruby: true
+#     Filters existing values in Ruby instead of applying a database IN clause
+#     (which can be bad for database performance).
 #   timestamps: true
 #     Adds created_at and updated_at columns to insert statement
 #   additional_columns: Hash
@@ -96,16 +100,23 @@ module FastInserter
     def existing_values(group_of_values)
       sql = "SELECT #{@variable_columns.join(', ')} FROM #{@table_name} WHERE #{existing_values_static_columns}"
 
+      unless @options[:filter_existing_in_ruby]
+        values_to_check = ActiveRecord::Base.send(:sanitize_sql_array, ["?", group_of_values])
+        sql += " AND #{@variable_columns.first} IN (#{values_to_check})"
+      end
+
       # NOTE: There are more elegant ways to get this field out of the resultset, but each database adaptor returns a different type
       # of result from 'execute(sql)'. Potential classes for 'result' is Array (sqlite), Mysql2::Result (mysql2), PG::Result (pg). Each
       # result can be enumerated into a list of arrays (mysql) or list of hashes (sqlite, pg)
       results = ActiveRecord::Base.connection.execute(sql)
       existing_values = stringify_values(results)
 
-      # Rather than a giant IN query in the sql statement (which can be bad for database performance),
-      # do the filtering of relevant values here in a ruby select.
-      group_of_values_strings = stringify_values(group_of_values)
-      existing_values & group_of_values_strings
+      if @options[:filter_existing_in_ruby]
+        group_of_values_strings = stringify_values(group_of_values)
+        existing_values & group_of_values_strings
+      else
+        existing_values
+      end
     end
 
     def stringify_values(results)
