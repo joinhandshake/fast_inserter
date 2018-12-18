@@ -448,5 +448,27 @@ describe FastInserter do
       expect(event.attendees.find_by(user_id: 4).registered).to eq false
       expect(event.attendees.find_by(user_id: 4).checked_in).to eq false
     end
+
+    describe '.existing_values_sql' do
+      it 'allows checking for existing values with a datasase IN clause' do
+        params = {
+          table: 'attendees',
+          static_columns: {
+            attendable_id: 1,
+            attendable_type: 'Event'
+          },
+          variable_column: 'user_id',
+          values: [1, 2],
+          options: {
+            timestamps: true,
+            check_for_existing: true,
+            filter_existing_in_database: true
+          }
+        }
+
+        inserter = FastInserter::Base.new(params)
+        expect(inserter.send(:existing_values_sql, [[1], [2]])).to eq "SELECT user_id FROM attendees WHERE attendable_id = 1 AND attendable_type = 'Event' AND user_id IN (1,2)"
+      end
+    end
   end
 end

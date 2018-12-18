@@ -19,7 +19,7 @@
 #       timestamps: true,
 #       unique: true,
 #       check_for_existing: true,
-#       filter_existing_in_ruby: true,
+#       filter_existing_in_database: true,
 #       group_size: 1_000
 #     },
 #     variable_column: 'user_id',
@@ -34,9 +34,8 @@
 #   check_for_existing: true
 #     Checks if values already exist in the database and only inserts nonexisting values
 #     This checks values scoped to static columns.
-#   filter_existing_in_ruby: true
-#     Filters existing values in Ruby instead of applying a database IN clause
-#     (which can be bad for database performance).
+#   filter_existing_in_database: true
+#     Checks for existing values using a database IN clause instead of filtering in Ruby.
 #   timestamps: true
 #     Adds created_at and updated_at columns to insert statement
 #   additional_columns: Hash
@@ -55,6 +54,10 @@ module FastInserter
       @additional_columns = params[:additional_columns]
       @variable_columns = Array(params[:variable_columns] || params[:variable_column])
       @options = params[:options] || {}
+
+      if @variable_columns.length > 1 && @options[:filter_existing_in_database]
+        fail 'filter_existing_in_database is not supported with multiple variable columns'
+      end
 
       # We want to break up the insertions into multiple transactiosn in case there
       # is a very large amount of values. This avoids PG:OutOfMemory errors and smooths
@@ -96,14 +99,20 @@ module FastInserter
       end
     end
 
-    # Queries for the existing values for a given group of values
-    def existing_values(group_of_values)
+    def existing_values_sql(group_of_values)
       sql = "SELECT #{@variable_columns.join(', ')} FROM #{@table_name} WHERE #{existing_values_static_columns}"
 
-      unless @options[:filter_existing_in_ruby]
-        values_to_check = ActiveRecord::Base.send(:sanitize_sql_array, ["?", group_of_values])
+      if @options[:filter_existing_in_database]
+        values_to_check = ActiveRecord::Base.send(:sanitize_sql_array, ['?', group_of_values.flatten])
         sql += " AND #{@variable_columns.first} IN (#{values_to_check})"
       end
+
+      sql
+    end
+
+    # Queries for the existing values for a given group of values
+    def existing_values(group_of_values)
+      sql = existing_values_sql(group_of_values)
 
       # NOTE: There are more elegant ways to get this field out of the resultset, but each database adaptor returns a different type
       # of result from 'execute(sql)'. Potential classes for 'result' is Array (sqlite), Mysql2::Result (mysql2), PG::Result (pg). Each
@@ -111,11 +120,11 @@ module FastInserter
       results = ActiveRecord::Base.connection.execute(sql)
       existing_values = stringify_values(results)
 
-      if @options[:filter_existing_in_ruby]
+      if @options[:filter_existing_in_database]
+        existing_values
+      else
         group_of_values_strings = stringify_values(group_of_values)
         existing_values & group_of_values_strings
-      else
-        existing_values
       end
     end
 
