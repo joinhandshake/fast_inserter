@@ -180,321 +180,335 @@ describe FastInserter do
       expect(event.attendees.pluck(:updated_by_id)).to eq [other_user_id, other_user_id, other_user_id, other_user_id]
     end
 
-    it "doesn't insert existing values when check_for_existing option is set" do
-      event = create_event
-      user_ids = [1, 2, 3, 4]
+    describe 'checking for existing values' do
+      [true, false].each do |filter_existing_in_database_value|
+        context "when filter_existing_in_database is #{filter_existing_in_database_value}" do
+          it "doesn't insert existing values" do
+            event = create_event
+            user_ids = [1, 2, 3, 4]
 
-      join_params = {
-        table: 'attendees',
-        static_columns: {
-          attendable_id: event.id,
-          attendable_type: 'Event'
-        },
-        variable_column: 'user_id',
-        values: user_ids,
-        options: {
-          timestamps: true,
-          check_for_existing: true
-        }
-      }
-      inserter = FastInserter::Base.new(join_params)
-      expect(event.attendees.count).to eq 0
-      inserter.fast_insert
+            join_params = {
+              table: 'attendees',
+              static_columns: {
+                attendable_id: event.id,
+                attendable_type: 'Event'
+              },
+              variable_column: 'user_id',
+              values: user_ids,
+              options: {
+                timestamps: true,
+                check_for_existing: true,
+                filter_existing_in_database: filter_existing_in_database_value
+              }
+            }
+            inserter = FastInserter::Base.new(join_params)
+            expect(event.attendees.count).to eq 0
+            inserter.fast_insert
 
-      expect(event.attendees.count).to eq 4
-      created_at = event.attendees.first.created_at
-      updated_at = event.attendees.first.updated_at
+            expect(event.attendees.count).to eq 4
+            created_at = event.attendees.first.created_at
+            updated_at = event.attendees.first.updated_at
 
-      # Now do a second round of inserting, including the old values, and expect no duplicates
-      next_user_ids = [5, 6, 7, 8]
-      join_params[:values] = (user_ids + next_user_ids)
-      inserter = FastInserter::Base.new(join_params)
-      inserter.fast_insert
+            # Now do a second round of inserting, including the old values, and expect no duplicates
+            next_user_ids = [5, 6, 7, 8]
+            join_params[:values] = (user_ids + next_user_ids)
+            inserter = FastInserter::Base.new(join_params)
+            inserter.fast_insert
 
-      expect(event.attendees.count).to eq 8
-      expect(event.attendees.first.created_at).to eq created_at
-      expect(event.attendees.first.updated_at).to eq updated_at
-      expect(event.attendees.pluck(:user_id)).to match_array (user_ids + next_user_ids)
-    end
+            expect(event.attendees.count).to eq 8
+            expect(event.attendees.first.created_at).to eq created_at
+            expect(event.attendees.first.updated_at).to eq updated_at
+            expect(event.attendees.pluck(:user_id)).to match_array (user_ids + next_user_ids)
+          end
 
-    it "doesn't insert existing values what a static column is null" do
-      event = create_event
-      user_ids = [1, 2, 3, 4]
+          it "doesn't insert existing values when a static column is null" do
+            event = create_event
+            user_ids = [1, 2, 3, 4]
 
-      join_params = {
-        table: 'attendees',
-        static_columns: {
-          attendable_id: event.id,
-          attendable_type: 'Event',
-          created_by_id: nil
-        },
-        variable_column: 'user_id',
-        values: user_ids,
-        options: {
-          timestamps: true,
-          check_for_existing: true
-        }
-      }
-      inserter = FastInserter::Base.new(join_params)
-      expect(event.attendees.count).to eq 0
-      inserter.fast_insert
+            join_params = {
+              table: 'attendees',
+              static_columns: {
+                attendable_id: event.id,
+                attendable_type: 'Event',
+                created_by_id: nil
+              },
+              variable_column: 'user_id',
+              values: user_ids,
+              options: {
+                timestamps: true,
+                check_for_existing: true,
+                filter_existing_in_database: filter_existing_in_database_value
+              }
+            }
+            inserter = FastInserter::Base.new(join_params)
+            expect(event.attendees.count).to eq 0
+            inserter.fast_insert
 
-      expect(event.attendees.count).to eq 4
-      created_at = event.attendees.first.created_at
-      updated_at = event.attendees.first.updated_at
+            expect(event.attendees.count).to eq 4
+            created_at = event.attendees.first.created_at
+            updated_at = event.attendees.first.updated_at
 
-      # Now do a second round of inserting, including the old values, and expect no duplicates
-      next_user_ids = [5, 6, 7, 8]
-      join_params[:values] = (user_ids + next_user_ids)
-      inserter = FastInserter::Base.new(join_params)
-      inserter.fast_insert
+            # Now do a second round of inserting, including the old values, and expect no duplicates
+            next_user_ids = [5, 6, 7, 8]
+            join_params[:values] = (user_ids + next_user_ids)
+            inserter = FastInserter::Base.new(join_params)
+            inserter.fast_insert
 
-      expect(event.attendees.count).to eq 8
-      expect(event.attendees.first.created_at).to eq created_at
-      expect(event.attendees.first.updated_at).to eq updated_at
-      expect(event.attendees.pluck(:user_id)).to match_array (user_ids + next_user_ids)
-    end
+            expect(event.attendees.count).to eq 8
+            expect(event.attendees.first.created_at).to eq created_at
+            expect(event.attendees.first.updated_at).to eq updated_at
+            expect(event.attendees.pluck(:user_id)).to match_array (user_ids + next_user_ids)
+          end
 
-    it "doesn't include the additional data when finding existing" do
-      user_id = 9
-      event = create_event
-      user_ids = [1, 2, 3, 4]
+          it "doesn't include the additional data when finding existing" do
+            user_id = 9
+            event = create_event
+            user_ids = [1, 2, 3, 4]
 
-      join_params = {
-        table: 'attendees',
-        static_columns: {
-          attendable_id: event.id,
-          attendable_type: 'Event'
-        },
-        additional_columns: {
-          created_by_id: user_id
-        },
-        variable_column: 'user_id',
-        values: user_ids,
-        options: {
-          timestamps: true,
-          check_for_existing: true
-        }
-      }
-      inserter = FastInserter::Base.new(join_params)
-      expect(event.attendees.count).to eq 0
-      inserter.fast_insert
+            join_params = {
+              table: 'attendees',
+              static_columns: {
+                attendable_id: event.id,
+                attendable_type: 'Event'
+              },
+              additional_columns: {
+                created_by_id: user_id
+              },
+              variable_column: 'user_id',
+              values: user_ids,
+              options: {
+                timestamps: true,
+                check_for_existing: true,
+                filter_existing_in_database: filter_existing_in_database_value
+              }
+            }
+            inserter = FastInserter::Base.new(join_params)
+            expect(event.attendees.count).to eq 0
+            inserter.fast_insert
 
-      expect(event.attendees.count).to eq 4
-      created_at = event.attendees.first.created_at
-      updated_at = event.attendees.first.updated_at
+            expect(event.attendees.count).to eq 4
+            created_at = event.attendees.first.created_at
+            updated_at = event.attendees.first.updated_at
 
-      # Now do a second round of inserting, including the old values, and expect no duplicates
-      next_user_ids = [5, 6, 7, 8]
-      join_params[:values] = user_ids + next_user_ids
-      inserter = FastInserter::Base.new(join_params)
-      inserter.fast_insert
+            # Now do a second round of inserting, including the old values, and expect no duplicates
+            next_user_ids = [5, 6, 7, 8]
+            join_params[:values] = user_ids + next_user_ids
+            inserter = FastInserter::Base.new(join_params)
+            inserter.fast_insert
 
-      expect(event.attendees.count).to eq 8
-      expect(event.attendees.first.created_at).to eq created_at
-      expect(event.attendees.first.updated_at).to eq updated_at
-      expect(event.attendees.pluck(:user_id)).to match_array user_ids + next_user_ids
-    end
+            expect(event.attendees.count).to eq 8
+            expect(event.attendees.first.created_at).to eq created_at
+            expect(event.attendees.first.updated_at).to eq updated_at
+            expect(event.attendees.pluck(:user_id)).to match_array user_ids + next_user_ids
+          end
 
-    it "doesn't insert existing values when check_for_existing option is set and values are strings" do
-      mass_email = create_mass_email
-      email_addresses = ['email1@example.com', 'email2@example.com']
+          it "doesn't insert existing values when values are strings" do
+            mass_email = create_mass_email
+            email_addresses = ['email1@example.com', 'email2@example.com']
 
-      join_params = {
-        table: 'mass_email_emails',
-        static_columns: {
-          mass_email_id: mass_email.id
-        },
-        variable_column: 'email_address',
-        values: email_addresses,
-        options: {
-          check_for_existing: true
-        }
-      }
-      inserter = FastInserter::Base.new(join_params)
-      expect(mass_email.mass_email_emails.count).to eq 0
-      inserter.fast_insert
+            join_params = {
+              table: 'mass_email_emails',
+              static_columns: {
+                mass_email_id: mass_email.id
+              },
+              variable_column: 'email_address',
+              values: email_addresses,
+              options: {
+                check_for_existing: true,
+                filter_existing_in_database: filter_existing_in_database_value
+              }
+            }
+            inserter = FastInserter::Base.new(join_params)
+            expect(mass_email.mass_email_emails.count).to eq 0
+            inserter.fast_insert
 
-      expect(mass_email.mass_email_emails.count).to eq 2
+            expect(mass_email.mass_email_emails.count).to eq 2
 
-      # Now do a second round of inserting, including the old values, and expect no duplicates
-      next_email_addresses = ['email3@example.com', 'email4@example.com']
-      join_params[:values] = email_addresses + next_email_addresses
-      inserter = FastInserter::Base.new(join_params)
-      inserter.fast_insert
+            # Now do a second round of inserting, including the old values, and expect no duplicates
+            next_email_addresses = ['email3@example.com', 'email4@example.com']
+            join_params[:values] = email_addresses + next_email_addresses
+            inserter = FastInserter::Base.new(join_params)
+            inserter.fast_insert
 
-      expect(mass_email.mass_email_emails.count).to eq 4
-      expect(mass_email.mass_email_emails.pluck(:email_address)).to match_array email_addresses + next_email_addresses
-    end
+            expect(mass_email.mass_email_emails.count).to eq 4
+            expect(mass_email.mass_email_emails.pluck(:email_address)).to match_array email_addresses + next_email_addresses
+          end
 
-    it "scopes existing values check to static columns when check_for_existing option is set" do
-      event = create_event
-      event2 = create_event
-      user_ids = [1,2,3,4]
+          it "scopes existing values check to static columns when check_for_existing option is set" do
+            event = create_event
+            event2 = create_event
+            user_ids = [1,2,3,4]
 
-      # first insert into event
-      join_params = {
-        table: 'attendees',
-        static_columns: {
-          attendable_id: event.id,
-          attendable_type: 'Event'
-        },
-        variable_column: 'user_id',
-        values: user_ids,
-        options: {
-          timestamps: true,
-          check_for_existing: true
-        }
-      }
-      inserter = FastInserter::Base.new(join_params)
-      expect(event.attendees.count).to eq 0
-      inserter.fast_insert
+            # first insert into event
+            join_params = {
+              table: 'attendees',
+              static_columns: {
+                attendable_id: event.id,
+                attendable_type: 'Event'
+              },
+              variable_column: 'user_id',
+              values: user_ids,
+              options: {
+                timestamps: true,
+                check_for_existing: true,
+                filter_existing_in_database: filter_existing_in_database_value
+              }
+            }
+            inserter = FastInserter::Base.new(join_params)
+            expect(event.attendees.count).to eq 0
+            inserter.fast_insert
 
-      expect(event.attendees.count).to eq 4
-      expect(event.attendees.pluck(:user_id)).to match_array user_ids
+            expect(event.attendees.count).to eq 4
+            expect(event.attendees.pluck(:user_id)).to match_array user_ids
 
-      # now insert into event2 and expect it to not care about the other user ids already
-      # present in event
-      join_params = {
-        table: 'attendees',
-        static_columns: {
-          attendable_id: event2.id,
-          attendable_type: 'Event'
-        },
-        variable_column: 'user_id',
-        values: user_ids,
-        options: {
-          timestamps: true,
-          check_for_existing: true
-        }
-      }
-      inserter = FastInserter::Base.new(join_params)
-      expect(event2.attendees.count).to eq 0
-      inserter.fast_insert
+            # now insert into event2 and expect it to not care about the other user ids already
+            # present in event
+            join_params = {
+              table: 'attendees',
+              static_columns: {
+                attendable_id: event2.id,
+                attendable_type: 'Event'
+              },
+              variable_column: 'user_id',
+              values: user_ids,
+              options: {
+                timestamps: true,
+                check_for_existing: true,
+                filter_existing_in_database: filter_existing_in_database_value
+              }
+            }
+            inserter = FastInserter::Base.new(join_params)
+            expect(event2.attendees.count).to eq 0
+            inserter.fast_insert
 
-      join_params[:values] = user_ids
-      inserter = FastInserter::Base.new(join_params)
-      inserter.fast_insert
+            join_params[:values] = user_ids
+            inserter = FastInserter::Base.new(join_params)
+            inserter.fast_insert
 
-      expect(event2.attendees.count).to eq 4
-      expect(event2.attendees.pluck(:user_id)).to match_array user_ids
-    end
+            expect(event2.attendees.count).to eq 4
+            expect(event2.attendees.pluck(:user_id)).to match_array user_ids
+          end
 
-    it "checks for existing values with multiple variable columns" do
-      event = create_event
+          it "checks for existing values with multiple variable columns", only: true do
+            event = create_event
 
-      # First insert - two attendees
-      user_ids = [1, 2]
-      registered = [true, true]
-      checked_in = [true, false]
+            # First insert - two attendees
+            user_ids = [1, 2]
+            registered = [true, true]
+            checked_in = [true, false]
 
-      join_params = {
-        table: 'attendees',
-        static_columns: {
-          attendable_id: event.id,
-          attendable_type: 'Event'
-        },
-        variable_columns: %w(user_id registered checked_in),
-        values: user_ids.zip(registered, checked_in),
-        options: {
-          timestamps: true
-        }
-      }
-      inserter = FastInserter::Base.new(join_params)
-      expect(event.attendees.count).to eq 0
-      inserter.fast_insert
+            join_params = {
+              table: 'attendees',
+              static_columns: {
+                attendable_id: event.id,
+                attendable_type: 'Event'
+              },
+              variable_columns: %w(user_id registered checked_in),
+              values: user_ids.zip(registered, checked_in),
+              options: {
+                timestamps: true,
+                filter_existing_in_database: filter_existing_in_database_value
+              }
+            }
+            inserter = FastInserter::Base.new(join_params)
+            expect(event.attendees.count).to eq 0
+            inserter.fast_insert
 
-      expect(event.attendees.count).to eq 2
-      expect(event.attendees.find_by(user_id: 1).registered).to eq true
-      expect(event.attendees.find_by(user_id: 1).checked_in).to eq true
+            expect(event.attendees.count).to eq 2
+            expect(event.attendees.find_by(user_id: 1).registered).to eq true
+            expect(event.attendees.find_by(user_id: 1).checked_in).to eq true
 
-      expect(event.attendees.find_by(user_id: 2).registered).to eq true
-      expect(event.attendees.find_by(user_id: 2).checked_in).to eq false
+            expect(event.attendees.find_by(user_id: 2).registered).to eq true
+            expect(event.attendees.find_by(user_id: 2).checked_in).to eq false
 
-      # Second insert - the same two attendees plus two more
-      user_ids = [1, 2, 3, 4]
-      registered = [true, true, false, false]
-      checked_in = [true, false, true, false]
+            # Second insert - the same two attendees plus two more
+            user_ids = [1, 2, 3, 4]
+            registered = [true, true, false, false]
+            checked_in = [true, false, true, false]
 
-      join_params = {
-        table: 'attendees',
-        static_columns: {
-          attendable_id: event.id,
-          attendable_type: 'Event'
-        },
-        variable_columns: %w(user_id registered checked_in),
-        values: user_ids.zip(registered, checked_in),
-        options: {
-          timestamps: true,
-          check_for_existing: true
-        }
-      }
-      inserter = FastInserter::Base.new(join_params)
-      expect(event.attendees.count).to eq 2
-      inserter.fast_insert
+            join_params = {
+              table: 'attendees',
+              static_columns: {
+                attendable_id: event.id,
+                attendable_type: 'Event'
+              },
+              variable_columns: %w(user_id registered checked_in),
+              values: user_ids.zip(registered, checked_in),
+              options: {
+                timestamps: true,
+                check_for_existing: true,
+                filter_existing_in_database: filter_existing_in_database_value
+              }
+            }
+            inserter = FastInserter::Base.new(join_params)
+            expect(event.attendees.count).to eq 2
+            inserter.fast_insert
 
-      # There should only be 4 attendees total, no duplicates
-      expect(event.attendees.count).to eq 4
+            # There should only be 4 attendees total, no duplicates
+            expect(event.attendees.count).to eq 4
 
-      expect(event.attendees.find_by(user_id: 1).registered).to eq true
-      expect(event.attendees.find_by(user_id: 1).checked_in).to eq true
+            expect(event.attendees.find_by(user_id: 1).registered).to eq true
+            expect(event.attendees.find_by(user_id: 1).checked_in).to eq true
 
-      expect(event.attendees.find_by(user_id: 2).registered).to eq true
-      expect(event.attendees.find_by(user_id: 2).checked_in).to eq false
+            expect(event.attendees.find_by(user_id: 2).registered).to eq true
+            expect(event.attendees.find_by(user_id: 2).checked_in).to eq false
 
-      expect(event.attendees.find_by(user_id: 3).registered).to eq false
-      expect(event.attendees.find_by(user_id: 3).checked_in).to eq true
+            expect(event.attendees.find_by(user_id: 3).registered).to eq false
+            expect(event.attendees.find_by(user_id: 3).checked_in).to eq true
 
-      expect(event.attendees.find_by(user_id: 4).registered).to eq false
-      expect(event.attendees.find_by(user_id: 4).checked_in).to eq false
-    end
-
-    describe '.existing_values_sql' do
-      it 'allows checking for existing values with a datasase IN clause with one variable column' do
-        params = {
-          table: 'attendees',
-          static_columns: {
-            attendable_id: 1,
-            attendable_type: 'Event'
-          },
-          variable_column: 'user_id',
-          values: [1, 2],
-          options: {
-            timestamps: true,
-            check_for_existing: true,
-            filter_existing_in_database: true
-          }
-        }
-
-        inserter = FastInserter::Base.new(params)
-        group_of_values = inserter.instance_variable_get('@value_groups').first
-        expected_sql = "SELECT user_id FROM attendees WHERE attendable_id = 1 AND attendable_type = 'Event' AND user_id IN (1,2)"
-        expect(inserter.send(:existing_values_sql, group_of_values)).to eq(expected_sql)
+            expect(event.attendees.find_by(user_id: 4).registered).to eq false
+            expect(event.attendees.find_by(user_id: 4).checked_in).to eq false
+          end
+        end
       end
 
-      it 'allows checking for existing values with a datasase IN clause with multiple variable columns' do
-        params = {
-          table: 'attendees',
-          static_columns: {
-            checked_in: true,
-            registered: true
-          },
-          variable_columns: %w[user_id attendable_id attendable_type],
-          values: [
-            [1, 1, 'Event'],
-            [1, 2, 'Event']
-          ],
-          options: {
-            timestamps: true,
-            check_for_existing: true,
-            filter_existing_in_database: true
+      describe '.existing_values_sql' do
+        it 'allows checking for existing values with a datasase IN clause with one variable column' do
+          params = {
+            table: 'attendees',
+            static_columns: {
+              attendable_id: 1,
+              attendable_type: 'Event'
+            },
+            variable_column: 'user_id',
+            values: [1, 2],
+            options: {
+              timestamps: true,
+              check_for_existing: true,
+              filter_existing_in_database: true
+            }
           }
-        }
 
-        inserter = FastInserter::Base.new(params)
-        group_of_values = inserter.instance_variable_get('@value_groups').first
-        expected_sql = "SELECT user_id, attendable_id, attendable_type FROM attendees WHERE checked_in = 't' AND registered = 't' AND (user_id = 1 AND attendable_id = 1 AND attendable_type = 'Event') AND (user_id = 1 AND attendable_id = 2 AND attendable_type = 'Event')"
-        expect(inserter.send(:existing_values_sql, group_of_values)).to eq(expected_sql)
+          inserter = FastInserter::Base.new(params)
+          group_of_values = inserter.instance_variable_get('@value_groups').first
+          expected_sql = "SELECT user_id FROM attendees WHERE attendable_id = 1 AND attendable_type = 'Event' AND user_id IN (1,2)"
+          expect(inserter.send(:existing_values_sql, group_of_values)).to eq(expected_sql)
+        end
+
+        it 'allows checking for existing values with a datasase IN clause with multiple variable columns' do
+          params = {
+            table: 'attendees',
+            static_columns: {
+              checked_in: true,
+              registered: true
+            },
+            variable_columns: %w[user_id attendable_id attendable_type],
+            values: [
+              [1, 1, 'Event'],
+              [1, 2, 'Event']
+            ],
+            options: {
+              timestamps: true,
+              check_for_existing: true,
+              filter_existing_in_database: true
+            }
+          }
+
+          inserter = FastInserter::Base.new(params)
+          group_of_values = inserter.instance_variable_get('@value_groups').first
+          expected_sql = "SELECT user_id, attendable_id, attendable_type FROM attendees WHERE checked_in = 't' AND registered = 't' AND ((user_id = 1 AND attendable_id = 1 AND attendable_type = 'Event') OR (user_id = 1 AND attendable_id = 2 AND attendable_type = 'Event'))"
+          expect(inserter.send(:existing_values_sql, group_of_values)).to eq(expected_sql)
+        end
       end
     end
   end

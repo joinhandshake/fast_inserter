@@ -102,10 +102,12 @@ module FastInserter
       # statement can be bad for database performance.
       if @options[:filter_existing_in_database]
         if @variable_columns.length > 1
-          group_of_values.each do |group|
+          group_of_values_sql = group_of_values.map do |group|
             values_hash = variable_column_values_to_hash(group)
-            sql += " AND (#{values_hash_to_sql(values_hash)})"
-          end
+            "(#{values_hash_to_sql(values_hash)})"
+          end.join(' OR ')
+
+          sql += " AND (#{group_of_values_sql})"
         else
           values_to_check = ActiveRecord::Base.send(:sanitize_sql_array, ['?', group_of_values.flatten])
           sql += " AND #{@variable_columns.first} IN (#{values_to_check})"
