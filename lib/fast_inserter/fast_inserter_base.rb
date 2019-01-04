@@ -55,10 +55,6 @@ module FastInserter
       @variable_columns = Array(params[:variable_columns] || params[:variable_column])
       @options = params[:options] || {}
 
-      if @variable_columns.length > 1 && @options[:filter_existing_in_database]
-        fail 'filter_existing_in_database is not supported with multiple variable columns'
-      end
-
       # We want to break up the insertions into multiple transactiosn in case there
       # is a very large amount of values. This avoids PG:OutOfMemory errors and smooths
       # out the load. The second 'false' param means don't fill in the last group with nil elements.
@@ -100,11 +96,20 @@ module FastInserter
     end
 
     def existing_values_sql(group_of_values)
-      sql = "SELECT #{@variable_columns.join(', ')} FROM #{@table_name} WHERE #{existing_values_static_columns}"
+      sql = "SELECT #{@variable_columns.join(', ')} FROM #{@table_name} WHERE #{values_hash_to_sql(@static_columns)}"
 
+      # Using the database to filter existing values is not enabled by default since large IN queries in the SQL
+      # statement can be bad for database performance.
       if @options[:filter_existing_in_database]
-        values_to_check = ActiveRecord::Base.send(:sanitize_sql_array, ['?', group_of_values.flatten])
-        sql += " AND #{@variable_columns.first} IN (#{values_to_check})"
+        if @variable_columns.length > 1
+          group_of_values.each do |group|
+            values_hash = variable_column_values_to_hash(group)
+            sql += " AND (#{values_hash_to_sql(values_hash)})"
+          end
+        else
+          values_to_check = ActiveRecord::Base.send(:sanitize_sql_array, ['?', group_of_values.flatten])
+          sql += " AND #{@variable_columns.first} IN (#{values_to_check})"
+        end
       end
 
       sql
@@ -138,8 +143,18 @@ module FastInserter
       end
     end
 
-    def existing_values_static_columns
-      @static_columns.map do |key, value|
+    def variable_column_values_to_hash(values)
+      hash = {}
+
+      @variable_columns.each_with_index do |variable_column, index|
+        hash[variable_column] = values[index]
+      end
+
+      hash
+    end
+
+    def values_hash_to_sql(values)
+      values.map do |key, value|
         if value.nil?
           "#{key} IS NULL"
         else

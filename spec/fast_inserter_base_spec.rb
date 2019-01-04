@@ -450,7 +450,7 @@ describe FastInserter do
     end
 
     describe '.existing_values_sql' do
-      it 'allows checking for existing values with a datasase IN clause' do
+      it 'allows checking for existing values with a datasase IN clause with one variable column' do
         params = {
           table: 'attendees',
           static_columns: {
@@ -467,7 +467,34 @@ describe FastInserter do
         }
 
         inserter = FastInserter::Base.new(params)
-        expect(inserter.send(:existing_values_sql, [[1], [2]])).to eq "SELECT user_id FROM attendees WHERE attendable_id = 1 AND attendable_type = 'Event' AND user_id IN (1,2)"
+        group_of_values = inserter.instance_variable_get('@value_groups').first
+        expected_sql = "SELECT user_id FROM attendees WHERE attendable_id = 1 AND attendable_type = 'Event' AND user_id IN (1,2)"
+        expect(inserter.send(:existing_values_sql, group_of_values)).to eq(expected_sql)
+      end
+
+      it 'allows checking for existing values with a datasase IN clause with multiple variable columns' do
+        params = {
+          table: 'attendees',
+          static_columns: {
+            checked_in: true,
+            registered: true
+          },
+          variable_columns: %w[user_id attendable_id attendable_type],
+          values: [
+            [1, 1, 'Event'],
+            [1, 2, 'Event']
+          ],
+          options: {
+            timestamps: true,
+            check_for_existing: true,
+            filter_existing_in_database: true
+          }
+        }
+
+        inserter = FastInserter::Base.new(params)
+        group_of_values = inserter.instance_variable_get('@value_groups').first
+        expected_sql = "SELECT user_id, attendable_id, attendable_type FROM attendees WHERE checked_in = 't' AND registered = 't' AND (user_id = 1 AND attendable_id = 1 AND attendable_type = 'Event') AND (user_id = 1 AND attendable_id = 2 AND attendable_type = 'Event')"
+        expect(inserter.send(:existing_values_sql, group_of_values)).to eq(expected_sql)
       end
     end
   end
