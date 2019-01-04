@@ -1,4 +1,14 @@
-## Unreleased ##
+## 0.1.7 (January 4, 2019) ##
+
+*   Add Database IN clause option to check for existing records.
+
+    *Jordon Dornbos*
+
+## 0.1.6 (July 3, 2018) ##
+
+*   Fix check_for_existing with multiple variable columns.
+
+    *Josh Warfield*
 
 *   Remove support for Ruby 2.2. Add support for Ruby 2.4 and 2.5.
 
