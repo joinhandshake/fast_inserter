@@ -489,13 +489,12 @@ describe FastInserter do
           params = {
             table: 'attendees',
             static_columns: {
-              checked_in: true,
-              registered: true
+              attendable_type: 'Event'
             },
-            variable_columns: %w[user_id attendable_id attendable_type],
+            variable_columns: %w[user_id attendable_id],
             values: [
-              [1, 1, 'Event'],
-              [1, 2, 'Event']
+              [1, 1],
+              [1, 2]
             ],
             options: {
               timestamps: true,
@@ -506,7 +505,7 @@ describe FastInserter do
 
           inserter = FastInserter::Base.new(params)
           group_of_values = inserter.instance_variable_get('@value_groups').first
-          expected_sql = "SELECT user_id, attendable_id, attendable_type FROM attendees WHERE checked_in = 't' AND registered = 't' AND ((user_id = 1 AND attendable_id = 1 AND attendable_type = 'Event') OR (user_id = 1 AND attendable_id = 2 AND attendable_type = 'Event'))"
+          expected_sql = "SELECT user_id, attendable_id FROM attendees WHERE attendable_type = 'Event' AND ((user_id = 1 AND attendable_id = 1) OR (user_id = 1 AND attendable_id = 2))"
           expect(inserter.send(:existing_values_sql, group_of_values)).to eq(expected_sql)
         end
       end
