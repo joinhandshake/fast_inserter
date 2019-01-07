@@ -381,7 +381,7 @@ describe FastInserter do
         expect(event2.attendees.pluck(:user_id)).to match_array user_ids
       end
 
-      it "checks for existing values with multiple variable columns", only: true do
+      it "checks for existing values with multiple variable columns" do
         event = create_event
 
         # First insert - two attendees
