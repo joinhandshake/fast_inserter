@@ -18,8 +18,7 @@
 #     options: {
 #       timestamps: true,
 #       unique: true,
-#       check_for_existing: true,
-#       group_size: 1_000
+#       check_for_existing: true
 #     },
 #     variable_column: 'user_id',
 #     values: user_ids
@@ -39,11 +38,11 @@
 #     A hash representing additional column values to set that you don't want
 #     to include in uniqueness checks or other pre-insertion operations.
 #   group_size: Integer
-#     The number of items you want to insert per batch of records. Default 10_000.
+#     The number of items you want to insert per batch of records. Defaults to 1_000.
 #
 module FastInserter
   class Base
-    DEFAULT_GROUP_SIZE = 2_000
+    DEFAULT_GROUP_SIZE = 1_000
 
     def initialize(params)
       @table_name = params[:table]
@@ -92,20 +91,33 @@ module FastInserter
       end
     end
 
+    def existing_values_sql(group_of_values)
+      sql = "SELECT #{@variable_columns.join(', ')} FROM #{@table_name} WHERE #{values_hash_to_sql(@static_columns)}"
+
+      if @variable_columns.length > 1
+        group_of_values_sql = group_of_values.map do |group|
+          values_hash = variable_column_values_to_hash(group)
+          "(#{values_hash_to_sql(values_hash)})"
+        end.join(' OR ')
+
+        sql += " AND (#{group_of_values_sql})"
+      else
+        values_to_check = ActiveRecord::Base.send(:sanitize_sql_array, ['?', group_of_values.flatten])
+        sql += " AND #{@variable_columns.first} IN (#{values_to_check})"
+      end
+
+      sql
+    end
+
     # Queries for the existing values for a given group of values
     def existing_values(group_of_values)
-      sql = "SELECT #{@variable_columns.join(', ')} FROM #{@table_name} WHERE #{existing_values_static_columns}"
+      sql = existing_values_sql(group_of_values)
 
       # NOTE: There are more elegant ways to get this field out of the resultset, but each database adaptor returns a different type
       # of result from 'execute(sql)'. Potential classes for 'result' is Array (sqlite), Mysql2::Result (mysql2), PG::Result (pg). Each
       # result can be enumerated into a list of arrays (mysql) or list of hashes (sqlite, pg)
       results = ActiveRecord::Base.connection.execute(sql)
-      existing_values = stringify_values(results)
-
-      # Rather than a giant IN query in the sql statement (which can be bad for database performance),
-      # do the filtering of relevant values here in a ruby select.
-      group_of_values_strings = stringify_values(group_of_values)
-      existing_values & group_of_values_strings
+      stringify_values(results)
     end
 
     def stringify_values(results)
@@ -118,8 +130,18 @@ module FastInserter
       end
     end
 
-    def existing_values_static_columns
-      @static_columns.map do |key, value|
+    def variable_column_values_to_hash(values)
+      hash = {}
+
+      @variable_columns.each_with_index do |variable_column, index|
+        hash[variable_column] = values[index]
+      end
+
+      hash
+    end
+
+    def values_hash_to_sql(values)
+      values.map do |key, value|
         if value.nil?
           "#{key} IS NULL"
         else
