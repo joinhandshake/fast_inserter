@@ -51,9 +51,9 @@ params = {
   options: {
     timestamps: true,
     unique: true,
-    check_for_existing: true,
-    group_size: 2_000
+    check_for_existing: true
   },
+  group_size: 2_000,
   variable_column: 'user_id',
   values: user_ids
 }
@@ -89,7 +89,7 @@ Queries the table for any values which already exist and removes them from the v
 
 ### group_size
 
-Insertions will be broken up into batches. This specifies the number of records you want to insert per batch. Default is 2,000.
+Insertions will be broken up into batches. This specifies the number of records you want to insert per batch. Default is 1,000.
 
 ### variable_column
 

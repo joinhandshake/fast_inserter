@@ -1,6 +1,6 @@
-## 0.1.7 (January 4, 2019) ##
+## 1.0.0.pre (January 7, 2019) ##
 
-*   Add Database IN clause option to check for existing records.
+*   Use database IN clause when checking for existing records.
 
     *Jordon Dornbos*
 

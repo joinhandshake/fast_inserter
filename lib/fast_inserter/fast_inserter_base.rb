@@ -18,8 +18,7 @@
 #     options: {
 #       timestamps: true,
 #       unique: true,
-#       check_for_existing: true,
-#       group_size: 1_000
+#       check_for_existing: true
 #     },
 #     variable_column: 'user_id',
 #     values: user_ids
@@ -39,7 +38,7 @@
 #     A hash representing additional column values to set that you don't want
 #     to include in uniqueness checks or other pre-insertion operations.
 #   group_size: Integer
-#     The number of items you want to insert per batch of records. Default 10_000.
+#     The number of items you want to insert per batch of records. Defaults to 1_000.
 #
 module FastInserter
   class Base
