@@ -156,7 +156,7 @@ module FastInserter
     end
 
     def column_names
-      "#{all_static_columns.keys.join(', ')}, #{@variable_columns.join(', ')}"
+      (all_static_columns.keys + @variable_columns).join(', ')
     end
 
     def all_static_columns
@@ -181,11 +181,15 @@ module FastInserter
 
     def insert_values(group_of_values)
       rv = []
-      static_column_values = ActiveRecord::Base.send(:sanitize_sql_array, ["?", all_static_columns.values])
+
+      static_column_values =
+        if all_static_columns.present?
+          "#{ActiveRecord::Base.send(:sanitize_sql_array, ["?", all_static_columns.values])},"
+        end
 
       group_of_values.each do |values|
         values = values.map { |value| ActiveRecord::Base.send(:sanitize_sql_array, ["?", value]) }
-        rv << "(#{static_column_values},#{values.join(',')})"
+        rv << "(#{static_column_values}#{values.join(',')})"
       end
 
       rv.join(', ')
