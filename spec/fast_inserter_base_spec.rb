@@ -180,6 +180,119 @@ describe FastInserter do
       expect(event.attendees.pluck(:updated_by_id)).to eq [other_user_id, other_user_id, other_user_id, other_user_id]
     end
 
+    context "without static columns" do
+      let(:user_ids) { [1, 2, 3, 4] }
+      let(:attendable_ids) { [3, 2, 4, 1] }
+      let(:attendable_types) { ['a', 'b', 'c', 'd'] }
+      let(:registered) { [true, false, true, false] }
+      let(:checked_in) { [false, true, true, false] }
+      let(:join_params) do
+        {
+          table: 'attendees',
+          variable_columns: variable_columns,
+          values: values,
+          options: {
+            timestamps: timestamps
+          }
+        }
+      end
+      let(:inserter) { FastInserter::Base.new(join_params) }
+
+      context "when timestamp option is set" do
+        let(:variable_columns) { %w(user_id attendable_id attendable_type registered checked_in) }
+        let(:values) { user_ids.zip(attendable_ids, attendable_types, registered, checked_in) }
+        let(:timestamps) { true }
+
+        context "when static_columns key is absent" do
+          it "supports multiple variable columns" do
+            expect {
+              inserter.fast_insert
+            }.to change {
+              Attendee.count
+            }.from(0).to(4)
+
+            Attendee.all.each_with_index do |attendee, i|
+              expect(attendee.user_id).to eq user_ids[i]
+              expect(attendee.attendable_id).to eq attendable_ids[i]
+              expect(attendee.attendable_type).to eq attendable_types[i]
+              expect(attendee.checked_in).to eq checked_in[i]
+              expect(attendee.registered).to eq registered[i]
+            end
+          end
+        end
+
+        context "when static_columns is empty hash" do
+          it "supports multiple variable columns" do
+            join_params.merge!(static_columns: {})
+
+            expect {
+              inserter.fast_insert
+            }.to change {
+              Attendee.count
+            }.from(0).to(4)
+
+            Attendee.all.each_with_index do |attendee, i|
+              expect(attendee.user_id).to eq user_ids[i]
+              expect(attendee.attendable_id).to eq attendable_ids[i]
+              expect(attendee.attendable_type).to eq attendable_types[i]
+              expect(attendee.checked_in).to eq checked_in[i]
+              expect(attendee.registered).to eq registered[i]
+            end
+          end
+        end
+      end
+
+      context "when timestamp option is not set" do
+        let(:created_at) { 4.times.map { |i| Time.now + Rational(10 * i, 86400) } }
+        let(:updated_at) { 4.times.map { |i| Time.now + Rational(60 * i, 86400) } }
+        let(:variable_columns) { %w(user_id registered checked_in attendable_type attendable_id created_at updated_at) }
+        let(:values) { user_ids.zip(registered, checked_in, attendable_types, attendable_ids, created_at, updated_at) }
+        let(:timestamps) { false }
+
+        context "when static_columns key is absent" do
+          it "supports multiple variable columns" do
+            expect {
+              inserter.fast_insert
+            }.to change {
+              Attendee.count
+            }.from(0).to(4)
+
+            Attendee.all.each_with_index do |attendee, i|
+              expect(attendee.user_id).to eq user_ids[i]
+              expect(attendee.attendable_id).to eq attendable_ids[i]
+              expect(attendee.attendable_type).to eq attendable_types[i]
+              expect(attendee.checked_in).to eq checked_in[i]
+              expect(attendee.registered).to eq registered[i]
+              expect(attendee.created_at.to_f - created_at[i].to_f).to be < 0.0001
+              expect(attendee.updated_at.to_f - updated_at[i].to_f).to be < 0.0001
+            end
+          end
+        end
+
+        context "when static_columns is empty hash" do
+          it "supports multiple variable columns" do
+            join_params.merge!(static_columns: {})
+
+            expect {
+              inserter.fast_insert
+            }.to change {
+              Attendee.count
+            }.from(0).to(4)
+
+            Attendee.all.each_with_index do |attendee, i|
+              expect(attendee.user_id).to eq user_ids[i]
+              expect(attendee.attendable_id).to eq attendable_ids[i]
+              expect(attendee.attendable_type).to eq attendable_types[i]
+              expect(attendee.checked_in).to eq checked_in[i]
+              expect(attendee.registered).to eq registered[i]
+              expect(attendee.created_at.to_f - created_at[i].to_f).to be < 0.0001
+              expect(attendee.updated_at.to_f - updated_at[i].to_f).to be < 0.0001
+            end
+          end
+        end
+      end
+    end
+
     describe 'checking for existing values' do
       it "doesn't insert existing values" do
         event = create_event
