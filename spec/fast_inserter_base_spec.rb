@@ -263,8 +263,8 @@ describe FastInserter do
               expect(attendee.attendable_type).to eq attendable_types[i]
               expect(attendee.checked_in).to eq checked_in[i]
               expect(attendee.registered).to eq registered[i]
-              expect(attendee.created_at.to_f - created_at[i].to_f).to be < 0.0001
-              expect(attendee.updated_at.to_f - updated_at[i].to_f).to be < 0.0001
+              expect(attendee.created_at.to_s).to eq created_at[i].utc.to_s
+              expect(attendee.updated_at.to_s).to eq updated_at[i].utc.to_s
             end
           end
         end
@@ -285,8 +285,8 @@ describe FastInserter do
               expect(attendee.attendable_type).to eq attendable_types[i]
               expect(attendee.checked_in).to eq checked_in[i]
               expect(attendee.registered).to eq registered[i]
-              expect(attendee.created_at.to_f - created_at[i].to_f).to be < 0.0001
-              expect(attendee.updated_at.to_f - updated_at[i].to_f).to be < 0.0001
+              expect(attendee.created_at.to_s).to eq created_at[i].utc.to_s
+              expect(attendee.created_at.to_s).to eq created_at[i].utc.to_s
             end
           end
         end
