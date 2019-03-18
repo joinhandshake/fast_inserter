@@ -161,7 +161,7 @@ module FastInserter
 
     def all_static_columns
       @all_static_columns ||= begin
-        rv = @static_columns.dup
+        rv = @static_columns.dup || {}
 
         if @options[:timestamps]
           time = Time.now
