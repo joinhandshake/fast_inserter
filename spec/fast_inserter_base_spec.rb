@@ -243,8 +243,8 @@ describe FastInserter do
       end
 
       context "when timestamp option is not set" do
-        let(:created_at) { 4.times.map { |i| Time.now + Rational(10 * i, 86400) } }
-        let(:updated_at) { 4.times.map { |i| Time.now + Rational(60 * i, 86400) } }
+        let(:created_at) { 4.times.map { |i| Time.now.utc + i.seconds } }
+        let(:updated_at) { 4.times.map { |i| Time.now.utc + (60 * i).seconds } }
         let(:variable_columns) { %w(user_id registered checked_in attendable_type attendable_id created_at updated_at) }
         let(:values) { user_ids.zip(registered, checked_in, attendable_types, attendable_ids, created_at, updated_at) }
         let(:timestamps) { false }
@@ -263,8 +263,8 @@ describe FastInserter do
               expect(attendee.attendable_type).to eq attendable_types[i]
               expect(attendee.checked_in).to eq checked_in[i]
               expect(attendee.registered).to eq registered[i]
-              expect(attendee.created_at.to_s).to eq created_at[i].utc.to_s
-              expect(attendee.updated_at.to_s).to eq updated_at[i].utc.to_s
+              expect(attendee.created_at).to be_within(1.second).of created_at[i]
+              expect(attendee.updated_at).to be_within(1.second).of updated_at[i]
             end
           end
         end
@@ -285,8 +285,8 @@ describe FastInserter do
               expect(attendee.attendable_type).to eq attendable_types[i]
               expect(attendee.checked_in).to eq checked_in[i]
               expect(attendee.registered).to eq registered[i]
-              expect(attendee.created_at.to_s).to eq created_at[i].utc.to_s
-              expect(attendee.created_at.to_s).to eq created_at[i].utc.to_s
+              expect(attendee.created_at).to be_within(1.second).of created_at[i]
+              expect(attendee.updated_at).to be_within(1.second).of updated_at[i]
             end
           end
         end
