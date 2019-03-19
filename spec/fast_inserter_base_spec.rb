@@ -217,6 +217,8 @@ describe FastInserter do
               expect(attendee.attendable_type).to eq attendable_types[i]
               expect(attendee.checked_in).to eq checked_in[i]
               expect(attendee.registered).to eq registered[i]
+              expect(attendee.created_at).to be_within(1.second).of(Time.now)
+              expect(attendee.updated_at).to be_within(1.second).of(Time.now)
             end
           end
         end
@@ -237,6 +239,8 @@ describe FastInserter do
               expect(attendee.attendable_type).to eq attendable_types[i]
               expect(attendee.checked_in).to eq checked_in[i]
               expect(attendee.registered).to eq registered[i]
+              expect(attendee.created_at).to be_within(1.second).of(Time.now)
+              expect(attendee.updated_at).to be_within(1.second).of(Time.now)
             end
           end
         end
