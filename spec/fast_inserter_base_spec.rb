@@ -64,6 +64,29 @@ describe FastInserter do
       expect(event.attendees.find_by(user_id: 4).checked_in).to eq false
     end
 
+    it 'supports inserts without any static columns' do
+      event_names = [
+        'Test event',
+        'Another test event',
+        'Yet another test event',
+        'And one more test event'
+      ]
+
+      event_params = {
+        table: 'events',
+        variable_column: 'name',
+        values: event_names,
+        options: {
+          timestamps: true
+        }
+      }
+      inserter = FastInserter::Base.new(event_params)
+      expect(Event.count).to eq 0
+      inserter.fast_insert
+
+      expect(Event.all.pluck(:name)).to match_array event_names
+    end
+
     it "only inserts unique values when unique option is set" do
       mass_email = create_mass_email
       fake_email_addresses = ["student@amaranta.edu", "recruiter@fb.com", "recruiter@fb.com"]

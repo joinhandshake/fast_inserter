@@ -46,7 +46,7 @@ module FastInserter
 
     def initialize(params)
       @table_name = params[:table]
-      @static_columns = params[:static_columns]
+      @static_columns = params[:static_columns] || {}
       @additional_columns = params[:additional_columns]
       @variable_columns = Array(params[:variable_columns] || params[:variable_column])
       @options = params[:options] || {}
@@ -92,7 +92,12 @@ module FastInserter
     end
 
     def existing_values_sql(group_of_values)
-      sql = "SELECT #{@variable_columns.join(', ')} FROM #{@table_name} WHERE #{values_hash_to_sql(@static_columns)}"
+      sql = "SELECT #{@variable_columns.join(', ')} FROM #{@table_name} "
+      where_conditions = []
+
+      if @static_columns.present?
+        where_conditions.append(values_hash_to_sql(@static_columns))
+      end
 
       if @variable_columns.length > 1
         group_of_values_sql = group_of_values.map do |group|
@@ -100,10 +105,14 @@ module FastInserter
           "(#{values_hash_to_sql(values_hash)})"
         end.join(' OR ')
 
-        sql += " AND (#{group_of_values_sql})"
+        where_conditions.append("(#{group_of_values_sql})")
       else
         values_to_check = ActiveRecord::Base.send(:sanitize_sql_array, ['?', group_of_values.flatten])
-        sql += " AND #{@variable_columns.first} IN (#{values_to_check})"
+        where_conditions.append("#{@variable_columns.first} IN (#{values_to_check})")
+      end
+
+      unless where_conditions.empty?
+        sql += "WHERE #{where_conditions.join(' AND ')}"
       end
 
       sql
@@ -156,7 +165,7 @@ module FastInserter
     end
 
     def column_names
-      "#{all_static_columns.keys.join(', ')}, #{@variable_columns.join(', ')}"
+      (all_static_columns.keys + @variable_columns).join(', ')
     end
 
     def all_static_columns
@@ -181,11 +190,17 @@ module FastInserter
 
     def insert_values(group_of_values)
       rv = []
-      static_column_values = ActiveRecord::Base.send(:sanitize_sql_array, ["?", all_static_columns.values])
+
+      static_column_values =
+        if all_static_columns.present?
+          ActiveRecord::Base.send(:sanitize_sql_array, ["?", all_static_columns.values])
+        else
+          []
+        end
 
       group_of_values.each do |values|
-        values = values.map { |value| ActiveRecord::Base.send(:sanitize_sql_array, ["?", value]) }
-        rv << "(#{static_column_values},#{values.join(',')})"
+        values = values.map { |value| ActiveRecord::Base.send(:sanitize_sql_array, ["?", value]) }.join(',')
+        rv << "(#{[static_column_values, values].join(',')})"
       end
 
       rv.join(', ')
