@@ -85,7 +85,12 @@ Ensures that the 'values' parameter is a unique set of values. Default is false.
 
 ### check_for_existing
 
-Queries the table for any values which already exist and removes them from the values to be inserted. This query uses 'static_columns' and 'variable_column' for determining uniqueness. Default is false.
+Queries the table for any values which already exist and removes them from the values to be inserted. This query uses 'static_columns' and 'variable_column' for determining uniqueness unless the `check_existing_columns` option is specified. Default is false.
+
+### check_existing_columns
+
+When the `check_for_existing` option is `true`, specify an array of column names to use for the existing values check instead of the
+default behavior of checking all static columns plus variable columns.
 
 ### group_size
 

@@ -18,7 +18,8 @@
 #     options: {
 #       timestamps: true,
 #       unique: true,
-#       check_for_existing: true
+#       check_for_existing: true,
+#       check_existing_columns: ['user_id']
 #     },
 #     variable_column: 'user_id',
 #     values: user_ids
@@ -32,6 +33,9 @@
 #   check_for_existing: true
 #     Checks if values already exist in the database and only inserts nonexisting values
 #     This checks values scoped to static columns.
+#   check_existing_columns: Array
+#     If check_for_existing is true, specify the names of columns to use for checking
+#     for existing values instead of checking all static plus variable columns.
 #   timestamps: true
 #     Adds created_at and updated_at columns to insert statement
 #   additional_columns: Hash
@@ -81,9 +85,9 @@ module FastInserter
     def fast_insert_group(group)
       if @options[:check_for_existing]
         ActiveRecord::Base.transaction do
-          non_existing_values = stringify_values(group) - existing_values(group)
-          sql_string = insertion_sql_for_group(non_existing_values)
-          ActiveRecord::Base.connection.execute(sql_string) unless non_existing_values.empty?
+          records = non_existing_values(group)
+          sql_string = insertion_sql_for_group(records)
+          ActiveRecord::Base.connection.execute(sql_string) unless records.empty?
         end
       else
         sql_string = insertion_sql_for_group(group)
@@ -91,22 +95,40 @@ module FastInserter
       end
     end
 
+    def non_existing_values(group)
+      if @options[:check_existing_columns].present?
+        existing_records = existing_values(group)
+
+        stringify_values(group).select do |record|
+          all_column_hash = variable_column_values_to_hash(record).merge(all_static_columns).stringify_keys
+          check_column_records = @options[:check_existing_columns].map { |column| all_column_hash[column] }
+
+          record unless existing_records.include?(check_column_records)
+        end
+      else
+        stringify_values(group) - existing_values(group)
+      end
+    end
+
     def existing_values_sql(group_of_values)
-      sql = "SELECT #{@variable_columns.join(', ')} FROM #{@table_name} "
+      sql = "SELECT #{select_columns.join(', ')} FROM #{@table_name} "
       where_conditions = []
 
       if @static_columns.present?
-        where_conditions.append(values_hash_to_sql(@static_columns))
+        columns = @static_columns.select { |column| include_column?(column) }
+        where_conditions.append(values_hash_to_sql(columns)) unless columns.empty?
       end
 
       if @variable_columns.length > 1
         group_of_values_sql = group_of_values.map do |group|
           values_hash = variable_column_values_to_hash(group)
+          values_hash.select! { |k| include_column?(k) }
+
           "(#{values_hash_to_sql(values_hash)})"
         end.join(' OR ')
 
         where_conditions.append("(#{group_of_values_sql})")
-      else
+      elsif include_column?(@variable_columns.first)
         values_to_check = ActiveRecord::Base.send(:sanitize_sql_array, ['?', group_of_values.flatten])
         where_conditions.append("#{@variable_columns.first} IN (#{values_to_check})")
       end
@@ -126,15 +148,16 @@ module FastInserter
       # of result from 'execute(sql)'. Potential classes for 'result' is Array (sqlite), Mysql2::Result (mysql2), PG::Result (pg). Each
       # result can be enumerated into a list of arrays (mysql) or list of hashes (sqlite, pg)
       results = ActiveRecord::Base.connection.execute(sql)
-      stringify_values(results)
+
+      stringify_values(results, select_columns)
     end
 
-    def stringify_values(results)
+    def stringify_values(results, columns = @variable_columns)
       results.to_a.map do |result|
         if result.is_a?(Hash)
-          @variable_columns.map { |col| ActiveRecord::Base.connection.type_cast(result[col], column_definitions[col]) }
+          columns.map { |col| ActiveRecord::Base.connection.type_cast(result[col], column_definitions[col]) }
         elsif result.is_a?(Array)
-          result.map.with_index { |val, i| ActiveRecord::Base.connection.type_cast(val, column_definitions[@variable_columns[i]]) }
+          result.map.with_index { |val, i| ActiveRecord::Base.connection.type_cast(val, column_definitions[columns[i]]) }
         end
       end
     end
@@ -212,6 +235,20 @@ module FastInserter
           memo.merge!(column.name => column)
         end
       end
+    end
+
+    def select_columns
+      if @options[:check_existing_columns].present?
+        @options[:check_existing_columns]
+      else
+        @variable_columns
+      end
+    end
+
+    def include_column?(column)
+      return true unless @options[:check_existing_columns].present?
+
+      @options[:check_existing_columns].include?(column)
     end
   end
 end
