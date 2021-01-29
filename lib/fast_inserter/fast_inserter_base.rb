@@ -57,7 +57,7 @@ module FastInserter
       all_values = params[:values].map { |value| Array(value) }
       all_values.uniq! if @options[:unique]
       group_size = Integer(params[:group_size] || ENV['FAST_INSERTER_GROUP_SIZE'] || DEFAULT_GROUP_SIZE)
-      @value_groups = all_values.in_groups_of(group_size, false)
+      @value_groups = all_values.each_slice(group_size).to_a
     end
 
     # Iterates through the value groups (which is all values in groups of smaller sizes)
