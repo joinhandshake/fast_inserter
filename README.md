@@ -1,7 +1,7 @@
 # FastInserter
 
+[![Build Status](https://travis-ci.org/joinhandshake/fast_inserter.svg?branch=main)](https://travis-ci.org/github/joinhandshake/fast_inserter)
 [![Gem Version](https://badge.fury.io/rb/fast_inserter.svg)](https://badge.fury.io/rb/fast_inserter)
-[![Build Status](https://travis-ci.org/joinhandshake/fast_inserter.svg?branch=master)](https://travis-ci.org/joinhandshake/fast_inserter)
 
 Use raw SQL to insert database records in bulk, fast. Supports uniqueness constraints, timestamps, and checking for existing records.
 
