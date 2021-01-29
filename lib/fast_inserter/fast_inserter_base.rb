@@ -1,3 +1,5 @@
+require 'enumerator'
+
 # Highly based off of https://github.com/sportngin/m2m_fast_insert
 # Unfortunately, that gem was not up to date for rails 4.
 #
