@@ -2,10 +2,14 @@ language: ruby
 sudo: required
 notifications:
   email: false
+services:
+  - mysql
+  - postgresql
 rvm:
   - 2.4.5
   - 2.5.3
   - 2.6.2
+  - 2.7.2
   - ruby-head
 env:
   matrix:
