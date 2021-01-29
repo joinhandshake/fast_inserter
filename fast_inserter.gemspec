@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
 
   case ENV['DB']
   when "mysql"; spec.add_development_dependency "mysql2"
-  when "sqlite"; spec.add_development_dependency "sqlite3", "~> 1.3.6"
+  when "sqlite"; spec.add_development_dependency "sqlite3", ">= 1.4"
   when "pg"; spec.add_development_dependency "pg"
   else spec.add_development_dependency "sqlite3" # Default
   end
