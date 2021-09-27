@@ -29,7 +29,7 @@ jobs:
         env:
           DB: ${{ matrix.database }}
           RV: ${{ matrix.ruby-version }}
-        run: echo "Ruby version: $RV, Database: $DB" 
+        run: "echo Ruby version: $RV, Database: $DB"
       # - name: Set up Ruby
       #   # Lock to this commit, v1.82.0
       #   uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
