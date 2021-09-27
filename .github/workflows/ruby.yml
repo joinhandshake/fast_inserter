@@ -16,7 +16,7 @@ on: [push]
 jobs:
   test:
 
-    runs-on: ubuntu-xenial
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
