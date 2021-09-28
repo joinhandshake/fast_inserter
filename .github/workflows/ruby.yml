@@ -26,8 +26,10 @@ jobs:
 
     strategy:
       matrix:
-        ruby-version: ['2.4.5', '2.5.3', 2.6.2', '2.7.2', 'head']
-        database: [pg, mysql, sqlite]
+        #ruby-version: ['2.4.5', '2.5.3', 2.6.2', '2.7.2', 'head']
+        #database: [pg, mysql, sqlite]
+        ruby-version: ['2.4.5']
+        database: [pg]
 
     steps:
       - uses: actions/checkout@v2
@@ -40,11 +42,11 @@ jobs:
         env:
           DB: ${{ matrix.database }}
           RV: ${{ matrix.ruby-version }}
-        shell: bash
+        shell: sh
         run:
-          if [ '$DB' = 'pg' ]; then psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres; fi
-          if [ '$DB' = 'pg' ]; then psql -c 'create database fast_inserter;' -U postgres; fi
-          if [ '$DB' = 'mysql' ]; then mysql -e 'create database IF NOT EXISTS fast_inserter;'; fi
+          "if [ '$DB' = 'pg' ]; then psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres; fi"
+          "if [ '$DB' = 'pg' ]; then psql -c 'create database fast_inserter;' -U postgres; fi"
+          "if [ '$DB' = 'mysql' ]; then mysql -e 'create database IF NOT EXISTS fast_inserter;'; fi"
       # - name: Set up Ruby
       #   # Lock to this commit, v1.82.0
       #   uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
