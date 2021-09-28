@@ -40,7 +40,7 @@ jobs:
         env:
           DB: ${{ matrix.database }}
           RV: ${{ matrix.ruby-version }}
-        shell: sh
+        shell: bash
         run:
           if [ '$DB' = 'pg' ]; then psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres; fi
           if [ '$DB' = 'pg' ]; then psql -c 'create database fast_inserter;' -U postgres; fi
