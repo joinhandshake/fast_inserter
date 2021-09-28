@@ -16,30 +16,37 @@ on: [push]
 jobs:
   test-pg:
     runs-on: ubuntu-latest
+    container: ubuntu:latest
     services:
       postgres:
-        image: postgres
+        image: postgresql
     strategy:
       matrix:
         #ruby-version: ['2.4.5', '2.5.3', 2.6.2', '2.7.2', 'head']
         ruby-version: ['2.4.5']
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Database
+      - name: Set up database
         run: psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -c 'create database fast_inserter;' -U postgres
-  test-mysql:
-    runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql
-    strategy:
-      matrix:
-        #ruby-version: ['2.4.5', '2.5.3', 2.6.2', '2.7.2', 'head']
-        ruby-version: ['2.4.5']
-    steps:
       - uses: actions/checkout@v2
-      - name: Setup Database
-        run: mysql -e 'create database IF NOT EXISTS fast_inserter;'
+      - name: Set up Ruby
+        # Lock to this commit, v1.82.0
+        uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+  # test-mysql:
+  #   runs-on: ubuntu-latest
+  #   services:
+  #     mysql:
+  #       image: mysql
+  #   strategy:
+  #     matrix:
+  #       #ruby-version: ['2.4.5', '2.5.3', 2.6.2', '2.7.2', 'head']
+  #       ruby-version: ['2.4.5']
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Setup Database
+  #       run: mysql -e 'create database IF NOT EXISTS fast_inserter;'
       # - name: Set up Ruby
       #   # Lock to this commit, v1.82.0
       #   uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
