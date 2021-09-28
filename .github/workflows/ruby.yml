@@ -17,7 +17,7 @@ jobs:
   test-pg:
     runs-on: ubuntu-latest
     services:
-      postgresql:
+      postgres:
         image: postgres
     strategy:
       matrix:
@@ -26,7 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Database
-        shell: sh
         run: psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -c 'create database fast_inserter;' -U postgres
   test-mysql:
     runs-on: ubuntu-latest
@@ -40,7 +39,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup Database
-        shell: sh
         run: mysql -e 'create database IF NOT EXISTS fast_inserter;'
       # - name: Set up Ruby
       #   # Lock to this commit, v1.82.0
