@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ubuntu:latest
     services:
-      postgresql:
+      postgres:
         image: postgres
     strategy:
       matrix:
