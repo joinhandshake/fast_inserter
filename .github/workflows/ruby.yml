@@ -22,7 +22,7 @@ jobs:
       mysql:
         image: mysql
       postgresql:
-        image: postgresql
+        image: postgres
 
     strategy:
       matrix:
