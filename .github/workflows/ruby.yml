@@ -25,7 +25,13 @@ jobs:
       matrix:
         #ruby-version: ['2.4.5', '2.5.3', 2.6.2', '2.7.2', 'head']
         ruby-version: ['2.4.5']
+    env:
+      PORT: ${{job.services.postgres.ports[5432]}}
     steps:
+      - name: Information
+        run: echo $PORT
+      - name: Docker info
+        run: docker ps
       - name: Set up database
         run: psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -c 'create database fast_inserter;' -U postgres
       - uses: actions/checkout@v2
