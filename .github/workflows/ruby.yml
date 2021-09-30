@@ -14,51 +14,50 @@ on: [push]
 #    branches: [ main ]
 
 jobs:
-  test-pg:
+  # label of the container job
+  postgres-job:
+    # containers must run in Linux based operating systems
     runs-on: ubuntu-latest
+    # Docker Hub image that `postgres-job` executes in
+    container: node:latest
+
+    # service containers to run with `postgres-job`
     services:
+      # label used to access the service container
       postgres:
-        image: postgres
-        ports:
-          - 5432:5432
-    strategy:
-      matrix:
-        #ruby-version: ['2.4.5', '2.5.3', 2.6.2', '2.7.2', 'head']
-        ruby-version: ['2.4.5']
-    steps:
-      - name: Information
+        # Docker Hub image
+        image: postgres:latest
+        # service environment variables
+        # `POSTGRES_HOST` is `postgres`
         env:
-          PORT: ${{ job.services.postgres.ports[5432] }}
-        run: echo $PORT
-      - name: Docker info
-        run: docker ps
-      - name: Set up database
-        run: psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -c 'create database fast_inserter;' -U postgres
-      - uses: actions/checkout@v2
-      - name: Set up Ruby
-        # Lock to this commit, v1.82.0
-        uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
-        with:
-          ruby-version: ${{ matrix.ruby-version }}
-          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-  # test-mysql:
-  #   runs-on: ubuntu-latest
-  #   services:
-  #     mysql:
-  #       image: mysql
-  #   strategy:
-  #     matrix:
-  #       #ruby-version: ['2.4.5', '2.5.3', 2.6.2', '2.7.2', 'head']
-  #       ruby-version: ['2.4.5']
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Setup Database
-  #       run: mysql -e 'create database IF NOT EXISTS fast_inserter;'
-      # - name: Set up Ruby
-      #   # Lock to this commit, v1.82.0
-      #   uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
-      #   with:
-      #     ruby-version: ${{ matrix.ruby-version }}
-      #     bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-      # - name: Run tests
-      #   run: bundle exec rake
+          # optional (defaults to `postgres`)
+          POSTGRES_DB: postgres_db
+          # required
+          POSTGRES_PASSWORD: postgres_password
+          # optional (defaults to `5432`)
+          POSTGRES_PORT: 5432
+          # optional (defaults to `postgres`)
+          POSTGRES_USER: postgres_user
+        ports:
+          # maps tcp port 5432 on service container to the host
+          - 5432:5432
+        # set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          apt-get update
+          apt-get install --yes postgresql-client
+
+      # queries database with postgres client
+      - name: Query database
+        run: psql -h postgres -d postgres_db -U postgres_user -c 'SELECT 1;'
+        env:
+          # postgress password is required; alternatively, you can run:
+          # `PGPASSWORD=postgres_password psql ...`
+          PGPASSWORD: postgres_password
