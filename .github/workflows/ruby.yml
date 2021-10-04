@@ -52,7 +52,7 @@ jobs:
           # `PGPASSWORD=postgres_password psql ...`
           PGPASSWORD: postgres_password
       - name: Set up Database
-        run: psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -c 'create database fast_inserter;' -U postgres
+        run: psql -h postgres -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -h postgres -c 'create database fast_inserter;' -U postgres
       - name: Set up Ruby
         # Lock to this commit, v1.82.0
         uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
