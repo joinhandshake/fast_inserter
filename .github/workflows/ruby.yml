@@ -19,7 +19,7 @@ jobs:
         image: postgres:latest
         # service environment variables
         # `POSTGRES_HOST` is `postgres`
-        env:
+        #env:
           # optional (defaults to `postgres`)
           # POSTGRES_DB: postgres_db
           # required
