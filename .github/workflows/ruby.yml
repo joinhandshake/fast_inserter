@@ -45,10 +45,10 @@ jobs:
           apt-get update
           apt-get install --yes postgresql-client
       # queries database with postgres client
-      - name: Query database
-        run: psql -h postgres -d postgres_db -U postgres -c 'SELECT 1;'
-        env:
-          PGPASSWORD: postgres_password
+      #- name: Query database
+      #  run: psql -h postgres -d postgres_db -U postgres -c 'SELECT 1;'
+      #  env:
+      #    PGPASSWORD: postgres_password
       - name: Set up Database
         run: psql -h postgres -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -h postgres -c 'create database fast_inserter;' -U postgres
         env:
