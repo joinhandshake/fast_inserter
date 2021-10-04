@@ -27,7 +27,7 @@ jobs:
           # optional (defaults to `5432`)
           POSTGRES_PORT: 5432
           # optional (defaults to `postgres`)
-          POSTGRES_USER: postgres_user
+          # POSTGRES_USER: postgres_user
         ports:
           # maps tcp port 5432 on service container to the host
           - 5432:5432
@@ -44,6 +44,13 @@ jobs:
         run: |
           apt-get update
           apt-get install --yes postgresql-client
+      # queries database with postgres client
+      - name: Query database
+        run: psql -h postgres -d postgres_db -U postgres -c 'SELECT 1;'
+        env:
+          # postgress password is required; alternatively, you can run:
+          # `PGPASSWORD=postgres_password psql ...`
+          PGPASSWORD: postgres_password
       - name: Set up Database
         run: psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -c 'create database fast_inserter;' -U postgres
       - name: Set up Ruby
@@ -55,10 +62,3 @@ jobs:
       - name: Run tests
         run: bundle exec rake
 
-      # # queries database with postgres client
-      # - name: Query database
-      #   run: psql -h postgres -d postgres_db -U postgres_user -c 'SELECT 1;'
-      #   env:
-      #     # postgress password is required; alternatively, you can run:
-      #     # `PGPASSWORD=postgres_password psql ...`
-      #     PGPASSWORD: postgres_password
