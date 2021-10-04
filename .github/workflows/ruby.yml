@@ -19,11 +19,11 @@ jobs:
         image: postgres:latest
         # service environment variables
         # `POSTGRES_HOST` is `postgres`
-        #env:
+        env:
           # optional (defaults to `postgres`)
           # POSTGRES_DB: postgres_db
           # required
-          # POSTGRES_PASSWORD: ""
+          POSTGRES_PASSWORD: postgres_password
           # optional (defaults to `5432`)
           # POSTGRES_PORT: 5432
           # optional (defaults to `postgres`)
@@ -47,12 +47,12 @@ jobs:
       # queries database with postgres client
       - name: Query database
         run: psql -h postgres -d postgres_db -U postgres -c 'SELECT 1;'
-        #env:
-          # postgress password is required; alternatively, you can run:
-          # `PGPASSWORD=postgres_password psql ...`
-          # PGPASSWORD: postgres_password
+        env:
+          PGPASSWORD: postgres_password
       - name: Set up Database
         run: psql -h postgres -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -h postgres -c 'create database fast_inserter;' -U postgres
+        env:
+          PGPASSWORD: postgres_password
       - name: Set up Ruby
         # Lock to this commit, v1.82.0
         uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
