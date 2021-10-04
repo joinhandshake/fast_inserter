@@ -23,7 +23,7 @@ jobs:
           # optional (defaults to `postgres`)
           POSTGRES_DB: postgres_db
           # required
-          POSTGRES_PASSWORD: postgres_password
+          POSTGRES_PASSWORD: 
           # optional (defaults to `5432`)
           POSTGRES_PORT: 5432
           # optional (defaults to `postgres`)
@@ -50,7 +50,7 @@ jobs:
         env:
           # postgress password is required; alternatively, you can run:
           # `PGPASSWORD=postgres_password psql ...`
-          PGPASSWORD: postgres_password
+          # PGPASSWORD: postgres_password
       - name: Set up Database
         run: psql -h postgres -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -h postgres -c 'create database fast_inserter;' -U postgres
       - name: Set up Ruby
