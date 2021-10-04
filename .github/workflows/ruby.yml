@@ -1,43 +1,33 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will download a prebuilt Ruby version, install dependencies and run tests with Rake
-# For more information see: https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
-
 name: Ruby
 
-on: [push]
-#  push:
-#    branches: [ main ]
-#  pull_request:
-#    branches: [ main ]
+on: [push, pull_request]
 
 jobs:
   # label of the container job
   postgres-job:
-    # containers must run in Linux based operating systems
     runs-on: ubuntu-latest
-    # Docker Hub image that `postgres-job` executes in
-    container: node:latest
 
-    # service containers to run with `postgres-job`
+    container: ubuntu:latest
+
+    strategy:
+      matrix:
+        # ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
+        ruby-version: ['ruby-head']
+    
     services:
-      # label used to access the service container
       postgres:
-        # Docker Hub image
         image: postgres:latest
         # service environment variables
         # `POSTGRES_HOST` is `postgres`
         env:
           # optional (defaults to `postgres`)
-          POSTGRES_DB: postgres_db
+          POSTGRES_DB: fast_inserter
           # required
-          POSTGRES_PASSWORD: postgres_password
+          POSTGRES_PASSWORD: ""
           # optional (defaults to `5432`)
           POSTGRES_PORT: 5432
           # optional (defaults to `postgres`)
-          POSTGRES_USER: postgres_user
+          POSTGRES_USER: postgres
         ports:
           # maps tcp port 5432 on service container to the host
           - 5432:5432
@@ -49,15 +39,26 @@ jobs:
           --health-retries 5
 
     steps:
+      - uses: actions/checkout@v2
       - name: Install PostgreSQL client
         run: |
           apt-get update
           apt-get install --yes postgresql-client
+      - name: Set up Database
+        run: psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -c 'create database fast_inserter;' -U postgres
+      - name: Set up Ruby
+        # Lock to this commit, v1.82.0
+        uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+      - name: Run tests
+        run: bundle exec rake
 
-      # queries database with postgres client
-      - name: Query database
-        run: psql -h postgres -d postgres_db -U postgres_user -c 'SELECT 1;'
-        env:
-          # postgress password is required; alternatively, you can run:
-          # `PGPASSWORD=postgres_password psql ...`
-          PGPASSWORD: postgres_password
+      # # queries database with postgres client
+      # - name: Query database
+      #   run: psql -h postgres -d postgres_db -U postgres_user -c 'SELECT 1;'
+      #   env:
+      #     # postgress password is required; alternatively, you can run:
+      #     # `PGPASSWORD=postgres_password psql ...`
+      #     PGPASSWORD: postgres_password
