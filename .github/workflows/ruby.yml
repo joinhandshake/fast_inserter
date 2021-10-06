@@ -46,6 +46,11 @@ jobs:
   mysql-job:
     runs-on: ubuntu-latest
 
+    env:
+      DB_USER: root
+      DB_PASSWORD: 'root'
+      DB_HOST: localhost
+
     strategy:
       matrix:
         # ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
