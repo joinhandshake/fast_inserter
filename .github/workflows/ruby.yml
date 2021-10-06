@@ -46,10 +46,10 @@ jobs:
   mysql-job:
     runs-on: ubuntu-20.04
 
-    env:
-      DB_USER: root
-      DB_PASSWORD: 'root'
-      DB_HOST: localhost
+    # env:
+    #   DB_USER: root
+    #   DB_PASSWORD: 'root'
+    #   DB_HOST: localhost
 
     strategy:
       matrix:
@@ -76,8 +76,8 @@ jobs:
       - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
       - name: Set up Database
         run: |
-          /etc/init.d/mysql start
-          mysql --host=localhost -e 'create database IF NOT EXISTS fast_inserter;'
+          sudo systemctl start mysql.service
+          mysql -e 'create database IF NOT EXISTS fast_inserter;'
       - name: Set up Ruby
         # Pin to this commit: v1.82.0
         uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
