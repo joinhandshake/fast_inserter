@@ -1,6 +1,6 @@
 name: Ruby
 
-on: [push, pull_request]
+on: push
 
 jobs:
   # label of the container job
@@ -12,7 +12,8 @@ jobs:
     strategy:
       matrix:
         # ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
-        ruby-version: ['ruby-head']
+        # ruby-version: ['ruby-head']
+        ruby-version: ['2.7.2']
     
     services:
       postgres:
