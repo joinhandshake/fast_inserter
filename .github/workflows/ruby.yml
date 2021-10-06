@@ -2,13 +2,14 @@ name: Ruby
 
 on: push
 
-env:
-  DB_HOST: localhost
-
 jobs:
   # postgres-job:
   #   runs-on: ubuntu-20.04
 
+  #   env:
+  #     DB_HOST: localhost
+  #     DB: pg
+  
   #   strategy:
   #     matrix:
   #       ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
@@ -50,6 +51,9 @@ jobs:
     #   DB_USER: root
     #   DB_PASSWORD: 'root'
     #   DB_HOST: localhost
+      env:
+        DB_HOST: localhost
+        DB: mysql
 
     strategy:
       matrix:
