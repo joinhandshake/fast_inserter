@@ -77,7 +77,7 @@ jobs:
       - name: Set up Database
         run: |
           sudo systemctl start mysql.service
-          mysql -e 'create database IF NOT EXISTS fast_inserter;'
+          mysql -h 127.0.0.1 -e 'create database IF NOT EXISTS fast_inserter;'
       - name: Set up Ruby
         # Pin to this commit: v1.82.0
         uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
