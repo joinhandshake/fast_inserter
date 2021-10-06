@@ -51,9 +51,9 @@ jobs:
     #   DB_USER: root
     #   DB_PASSWORD: 'root'
     #   DB_HOST: localhost
-      env:
-        DB_HOST: localhost
-        DB: mysql
+    env:
+      DB_HOST: localhost
+      DB: mysql
 
     strategy:
       matrix:
