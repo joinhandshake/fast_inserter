@@ -74,9 +74,9 @@ jobs:
     steps:
       # Pin to this commit: v2
       - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
-      - name: Set up Database
-        run: |
-          sudo systemctl start mysql.service
+      # - name: Set up Database
+      #   run: |
+      #     sudo systemctl start mysql.service
       # mysql -h 127.0.0.1 -e 'create database IF NOT EXISTS fast_inserter;'
       - name: Set up Ruby
         # Pin to this commit: v1.82.0
