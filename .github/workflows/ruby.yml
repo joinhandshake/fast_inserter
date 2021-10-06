@@ -7,7 +7,7 @@ jobs:
   postgres-job:
     runs-on: ubuntu-latest
 
-    container: ubuntu:latest
+    # container: ubuntu:latest
 
     strategy:
       matrix:
