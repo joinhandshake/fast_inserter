@@ -16,7 +16,7 @@ jobs:
   #   services:
   #     postgres:
   #       # Pin to this commit: version 14.0
-  #       image: postgres:@sha256:2b8a60d4ae4b3cf9dc5ae823700f699fdabdb0d03901dd480c9a410ca72c4571
+  #       image: postgres@sha256:2b8a60d4ae4b3cf9dc5ae823700f699fdabdb0d03901dd480c9a410ca72c4571
   #       env:
   #         POSTGRES_PASSWORD: postgres_password
   #       ports:
@@ -54,7 +54,7 @@ jobs:
     services:
       mysql:
         # Pin to this commit: version 8.0.26
-        image: mysql:@sha256:a0a2699fe9133b68079099740338691e72e0f880325e28f1b1bdb7589d6a5be1
+        image: mysql@sha256:a0a2699fe9133b68079099740338691e72e0f880325e28f1b1bdb7589d6a5be1
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: yes
           MYSQL_DATABASE: fast_inserter
