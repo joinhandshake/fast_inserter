@@ -7,7 +7,7 @@ env:
 
 jobs:
   # postgres-job:
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-20.04
 
   #   strategy:
   #     matrix:
@@ -44,7 +44,7 @@ jobs:
   #       run: bundle exec rake
 
   mysql-job:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     env:
       DB_USER: root
@@ -76,7 +76,7 @@ jobs:
       - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
       - name: Set up Database
         run: |
-          sudo /etc/init.d/mysql start
+          /etc/init.d/mysql start
           mysql --host=localhost -e 'create database IF NOT EXISTS fast_inserter;'
       - name: Set up Ruby
         # Pin to this commit: v1.82.0
