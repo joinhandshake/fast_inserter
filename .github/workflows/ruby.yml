@@ -51,7 +51,7 @@ jobs:
       #  env:
       #    PGPASSWORD: postgres_password
       - name: Set up Database
-        run: psql -h postgres -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -h postgres -c 'create database fast_inserter;' -U postgres
+        run: psql -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -c 'create database fast_inserter;' -U postgres
         env:
           PGPASSWORD: postgres_password
       - name: Set up Ruby
