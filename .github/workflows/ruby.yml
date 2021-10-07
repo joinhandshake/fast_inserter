@@ -34,13 +34,15 @@ jobs:
 
     steps:
       - name: Init
-        run: echo "Using Ruby v$RV and '$DB' as the database."
+        run: echo "Using Ruby $RV and '$DB' as the database."
       - name: Checkout
         # Pin to this commit: v2
         uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
       - name: Set up Database
         env:
           PGPASSWORD: postgres_password
+          DB: ${{ matrix.database }}
+          RV: ${{ matrix.ruby-version }}
         run: |
           if [ '$DB' = 'pg' ]; then psql -h localhost -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres; fi
           if [ '$DB' = 'pg' ]; then psql -h localhost -c 'create database fast_inserter;' -U postgres; fi
