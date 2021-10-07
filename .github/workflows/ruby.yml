@@ -13,7 +13,7 @@ jobs:
     
     steps:
       # Pin to this commit: v2
-      - uses: ./ruby-steps.yml
+      - uses: ./ruby-steps
         
   # postgres-job:
   #   runs-on: ubuntu-20.04
