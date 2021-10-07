@@ -12,3 +12,4 @@ pg:
   database: fast_inserter
   username: postgres
   password: postgres_password
+  host: localhost
