@@ -41,10 +41,10 @@ jobs:
         uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
       - name: Set up Database
         run: |
-          psql -h localhost -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres
-          psql -h localhost -c 'create database fast_inserter;' -U postgres
-          sudo systemctl start mysql.service
-          mysql -e 'create database IF NOT EXISTS fast_inserter;' -uroot -proot
+          if [ "$DB" = "pg" ]; then psql -h localhost -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres; fi
+          if [ "$DB" = "pg" ]; then psql -h localhost -c 'create database fast_inserter;' -U postgres; fi
+          if [ "$DB" = "mysql" ]; then sudo systemctl start mysql.service; fi
+          if [ "$DB" = "mysql" ]; then mysql -e 'create database IF NOT EXISTS fast_inserter;' -uroot -proot; fi
       - name: Set up Ruby
         # Pin to this commit: v1.82.0
         uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
