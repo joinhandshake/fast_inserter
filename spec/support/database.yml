@@ -5,7 +5,8 @@ sqlite:
 mysql:
   adapter: mysql2
   database: fast_inserter
-  username:
+  username: root
+  password: root
   encoding: utf8
 pg:
   adapter: postgresql

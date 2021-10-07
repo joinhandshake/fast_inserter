@@ -91,6 +91,6 @@ jobs:
       - name: Set up Database
         run: |
           sudo systemctl start mysql.service
-          sudo mysql -h 127.0.0.1 -e 'create database IF NOT EXISTS fast_inserter;'
+          sudo mysql -e 'create database IF NOT EXISTS fast_inserter;' -u 'root' -p 'root'
       - name: Build and Test
         uses: ./.github/actions/ruby-steps
