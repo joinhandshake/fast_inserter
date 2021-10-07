@@ -3,39 +3,21 @@ name: Ruby
 on: push
 
 jobs:
-  sqlite-job:
+  build-and-test-job:
     runs-on: ubuntu-20.04
-
-    env:
-      DB: sqlite
 
     strategy:
       matrix:
         ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
+        database: [sqlite, pg, mysql]
     
-    steps:      
-      - name: Checkout
-        # Pin to this commit: v2
-        uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
-      - name: Build and Test
-        uses: ./.github/actions/ruby-steps
-        
-  postgres-job:
-    runs-on: ubuntu-20.04
-
-    env:
-      DB_HOST: localhost
-      DB: pg
-  
-    strategy:
-      matrix:
-        ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
-    
+    # Postgres has to be explicitly included. The runner environment already has mysql installed by default.
     services:
       postgres:
         # Pin to this commit: version 14.0
         image: postgres@sha256:2b8a60d4ae4b3cf9dc5ae823700f699fdabdb0d03901dd480c9a410ca72c4571
         env:
+          # Password is required. Postgres won't start without it.
           POSTGRES_PASSWORD: postgres_password
         ports:
           - 5432:5432
@@ -45,34 +27,31 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    env:
+      # CAUTION - this env var is also used by the test setup code. Don't change the name of it!
+      DB: ${{ matrix.database }}
+      RV: ${{ matrix.ruby-version }}
+
     steps:
+      - name: Init
+        run: echo 'Using Ruby v$RV and "$DB" as the database.'      
       - name: Checkout
         # Pin to this commit: v2
         uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
       - name: Set up Database
-        run: psql -h localhost -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres && psql -h localhost -c 'create database fast_inserter;' -U postgres
         env:
           PGPASSWORD: postgres_password
-      - name: Build and Test
-        uses: ./.github/actions/ruby-steps
-
-  mysql-job:
-    runs-on: ubuntu-20.04
-
-    env:
-      DB_HOST: localhost
-      DB: mysql
-
-    strategy:
-      matrix:
-        ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
-    
-    steps:
-      # Pin to this commit: v2
-      - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
-      - name: Set up Database
         run: |
-          sudo systemctl start mysql.service
-          sudo mysql -e 'create database IF NOT EXISTS fast_inserter;' -uroot -proot
-      - name: Build and Test
-        uses: ./.github/actions/ruby-steps
+          if [ '$DB' = 'pg' ]; psql -h localhost -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres; fi
+          if [ '$DB' = 'pg' ]; psql -h localhost -c 'create database fast_inserter;' -U postgres; fi
+          if [ '$DB' = 'mysql' ]; sudo systemctl start mysql.service; fi
+          if [ '$DB' = 'mysql' ]; mysql -e 'create database IF NOT EXISTS fast_inserter;' -uroot -proot; fi
+      - name: Set up Ruby
+        # Pin to this commit: v1.82.0
+        uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+      - name: Run tests
+        # The test setup code reads the DB env var to determine which database to use.
+        run: bundle exec rake
