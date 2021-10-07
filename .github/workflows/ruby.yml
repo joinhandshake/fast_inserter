@@ -11,8 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        # ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
-        ruby-version: ['ruby-head']
+        ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
     
     steps:      
       - name: Checkout
@@ -30,8 +29,7 @@ jobs:
   
     strategy:
       matrix:
-        # ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
-        ruby-version: ['ruby-head']
+        ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
     
     services:
       postgres:
@@ -67,24 +65,8 @@ jobs:
 
     strategy:
       matrix:
-        # ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
-        ruby-version: ['ruby-head']
+        ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
     
-    # services:
-    #   mysql:
-    #     # Pin to this commit: version 8.0.26
-    #     image: mysql@sha256:a0a2699fe9133b68079099740338691e72e0f880325e28f1b1bdb7589d6a5be1
-    #     env:
-    #       MYSQL_ALLOW_EMPTY_PASSWORD: yes
-    #       MYSQL_DATABASE: fast_inserter
-    #     ports:
-    #       - 3306:3306
-    #     options: >-
-    #       --health-cmd="mysqladmin ping"
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 5
-
     steps:
       # Pin to this commit: v2
       - uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
