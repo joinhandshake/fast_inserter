@@ -42,10 +42,10 @@ jobs:
         env:
           PGPASSWORD: postgres_password
         run: |
-          if [ '$DB' = 'pg' ]; psql -h localhost -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres; fi
-          if [ '$DB' = 'pg' ]; psql -h localhost -c 'create database fast_inserter;' -U postgres; fi
-          if [ '$DB' = 'mysql' ]; sudo systemctl start mysql.service; fi
-          if [ '$DB' = 'mysql' ]; mysql -e 'create database IF NOT EXISTS fast_inserter;' -uroot -proot; fi
+          if [ '$DB' = 'pg' ]; then psql -h localhost -c 'DROP DATABASE IF EXISTS fast_inserter;' -U postgres; fi
+          if [ '$DB' = 'pg' ]; then psql -h localhost -c 'create database fast_inserter;' -U postgres; fi
+          if [ '$DB' = 'mysql' ]; then sudo systemctl start mysql.service; fi
+          if [ '$DB' = 'mysql' ]; then mysql -e 'create database IF NOT EXISTS fast_inserter;' -uroot -proot; fi
       - name: Set up Ruby
         # Pin to this commit: v1.82.0
         uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
