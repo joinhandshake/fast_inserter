@@ -11,3 +11,4 @@ pg:
   adapter: postgresql
   database: fast_inserter
   username: postgres
+  password: postgres_password
