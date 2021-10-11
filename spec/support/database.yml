@@ -5,9 +5,12 @@ sqlite:
 mysql:
   adapter: mysql2
   database: fast_inserter
-  username:
+  username: root
+  password: root
   encoding: utf8
 pg:
   adapter: postgresql
   database: fast_inserter
   username: postgres
+  password: postgres_password
+  host: localhost
