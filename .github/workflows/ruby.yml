@@ -51,6 +51,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+          run: bundle _1.17.3_ install
       - name: Run tests
         # The test setup code reads the DB env var to determine which database to use.
         run: bundle exec rake
