@@ -46,7 +46,6 @@ jobs:
           if [ "$DB" = "mysql" ]; then sudo systemctl start mysql.service; fi
           if [ "$DB" = "mysql" ]; then mysql -e 'create database IF NOT EXISTS fast_inserter;' -uroot -proot; fi
       - name: Set up Ruby
-        # Pin to this commit: v1.82.0
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
