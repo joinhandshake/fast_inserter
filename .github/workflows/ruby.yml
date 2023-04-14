@@ -47,11 +47,10 @@ jobs:
           if [ "$DB" = "mysql" ]; then mysql -e 'create database IF NOT EXISTS fast_inserter;' -uroot -proot; fi
       - name: Set up Ruby
         # Pin to this commit: v1.82.0
-        uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
+        uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-          run: bundle _1.17.3_ install
       - name: Run tests
         # The test setup code reads the DB env var to determine which database to use.
         run: bundle exec rake
