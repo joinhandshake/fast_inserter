@@ -468,7 +468,11 @@ describe FastInserter do
 
           inserter = FastInserter::Base.new(params)
           group_of_values = inserter.instance_variable_get('@value_groups').first
-          expected_sql = "SELECT user_id FROM attendees WHERE attendable_id = 1 AND attendable_type = 'Event' AND user_id IN (1,2)"
+          if mysql_security_type_casting?
+            expected_sql = "SELECT user_id FROM attendees WHERE attendable_id = '1' AND attendable_type = 'Event' AND user_id IN ('1','2')"
+          else
+            expected_sql = "SELECT user_id FROM attendees WHERE attendable_id = 1 AND attendable_type = 'Event' AND user_id IN (1,2)"
+          end
           expect(inserter.send(:existing_values_sql, group_of_values)).to eq(expected_sql)
         end
 
@@ -491,7 +495,11 @@ describe FastInserter do
 
           inserter = FastInserter::Base.new(params)
           group_of_values = inserter.instance_variable_get('@value_groups').first
-          expected_sql = "SELECT user_id, attendable_id FROM attendees WHERE attendable_type = 'Event' AND ((user_id = 1 AND attendable_id = 1) OR (user_id = 1 AND attendable_id = 2))"
+          if mysql_security_type_casting?
+            expected_sql = "SELECT user_id, attendable_id FROM attendees WHERE attendable_type = 'Event' AND ((user_id = '1' AND attendable_id = '1') OR (user_id = '1' AND attendable_id = '2'))"
+          else
+            expected_sql = "SELECT user_id, attendable_id FROM attendees WHERE attendable_type = 'Event' AND ((user_id = 1 AND attendable_id = 1) OR (user_id = 1 AND attendable_id = 2))"
+          end
           expect(inserter.send(:existing_values_sql, group_of_values)).to eq(expected_sql)
         end
       end

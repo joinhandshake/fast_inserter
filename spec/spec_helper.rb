@@ -30,3 +30,7 @@ RSpec.configure do |config|
     DatabaseCleaner.clean
   end
 end
+
+def mysql_security_type_casting?
+  ENV['DB'] == 'mysql' && Gem::Version.new(ActiveRecord.version) >= Gem::Version.new('7.0.0.0')
+end
