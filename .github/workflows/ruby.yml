@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', '3.0.6', 3.1.4', 3.2.2', 'ruby-head']
+        ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', '3.0.6', '3.1.4', '3.2.2', 'ruby-head']
         database: [sqlite, pg, mysql]
     
     # Postgres has to be explicitly included. The runner environment already has mysql installed by default.
