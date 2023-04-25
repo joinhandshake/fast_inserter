@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        ruby-version: ['2.4.0', '2.5.1', '2.6.6', '2.7.2', 'ruby-head']
+        ruby-version: ['2.6.10', '2.7.8', '3.0.6', '3.1.4', '3.2.2', 'ruby-head']
         database: [sqlite, pg, mysql]
     
     # Postgres has to be explicitly included. The runner environment already has mysql installed by default.
@@ -46,8 +46,7 @@ jobs:
           if [ "$DB" = "mysql" ]; then sudo systemctl start mysql.service; fi
           if [ "$DB" = "mysql" ]; then mysql -e 'create database IF NOT EXISTS fast_inserter;' -uroot -proot; fi
       - name: Set up Ruby
-        # Pin to this commit: v1.82.0
-        uses: ruby/setup-ruby@5e4f0a10bfc39c97cd5358121291e27e5d97e09b
+        uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby-version }}
           bundler-cache: true # runs 'bundle install' and caches installed gems automatically

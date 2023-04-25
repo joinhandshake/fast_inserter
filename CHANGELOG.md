@@ -1,3 +1,13 @@
+## 2.0.0 (April 20, 2023) ##
+
+* Drop Ruby version 2.4 and 2.5 support
+* Add Ruby versions 3.0.6, 3.1.4, 3.2.2
+* Update development Ruby version to 3.0.6
+* Update type casting in preparation for rails 7
+* Account for MySQL type casting in ActiveRecord 7
+
+    *Amy Lin, Tim Kelly*
+
 ## 1.0.0.pre (January 7, 2019) ##
 
 *   Use database IN clause when checking for existing records.

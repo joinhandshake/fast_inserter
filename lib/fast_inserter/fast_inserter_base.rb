@@ -125,11 +125,24 @@ module FastInserter
     def stringify_values(results)
       results.to_a.map do |result|
         if result.is_a?(Hash)
-          @variable_columns.map { |col| ActiveRecord::Base.connection.type_cast(result[col], column_definitions[col]) }
+          @variable_columns.map { |col| type_cast_column(result[col], column_definitions[col]) }
         elsif result.is_a?(Array)
-          result.map.with_index { |val, i| ActiveRecord::Base.connection.type_cast(val, column_definitions[@variable_columns[i]]) }
+          result.map.with_index { |val, i| type_cast_column(val, column_definitions[@variable_columns[i]]) }
         end
       end
+    end
+
+    # Passing a column to the method type_cast is deprecated 
+    # and will be removed in Rails 7. For now, we can manually 
+    # call lookup_cast_type_from_column and serialize our
+    # values with the returned type.
+    def type_cast_column(value, column = nil)
+      if column
+        type = ActiveRecord::Base.connection.lookup_cast_type_from_column(column)
+        value = type.serialize(value)
+      end
+
+      ActiveRecord::Base.connection.type_cast(value)
     end
 
     def variable_column_values_to_hash(values)
